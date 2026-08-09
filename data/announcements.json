@@ -1,10 +1,182 @@
 [
   {
-    "id": "welcome",
+    "id": "ann-eid-arrangements",
     "type": "announcement",
-    "title": "Welcome to the app",
-    "body": "Announcements, Janaza notices, madrassa updates and reminders will appear here once posted.",
-    "date": "2026-06-28",
-    "createdAt": 1782650675009
+    "title": "Eid ul-Adha prayer arrangements",
+    "body": "There will be three Eid congregations, at 7:30am, 8:30am and 9:30am.\n\nThe main hall will be used for the first two jamaats and the annexe will open for the third. Please arrive early, bring a prayer mat if you can, and use the overflow parking on Winston Street rather than blocking residents' driveways.",
+    "date": "2026-08-08",
+    "image": "img/ann/eid.svg",
+    "createdAt": 1786183200000
+  },
+  {
+    "id": "ann-extension-appeal",
+    "type": "announcement",
+    "title": "Masjid extension appeal reaches halfway",
+    "body": "Alhamdulillah, the building fund has now passed £50,000 of the £100,000 target.\n\nThe extension will add a larger sisters' prayer hall, two madrassa classrooms and step-free lift access to the first floor. Donations can be given at the office, by standing order, or through the collection boxes at either entrance.",
+    "date": "2026-08-06",
+    "image": "img/ann/appeal.svg",
+    "createdAt": 1786010400000
+  },
+  {
+    "id": "ann-wudhu-facilities",
+    "type": "announcement",
+    "title": "New wudhu facilities now open",
+    "body": "The refurbished wudhu area on the ground floor is open from Fajr today. Two of the seated stations are height-adjustable for anyone who finds standing difficult.\n\nThe old facilities will stay closed while the tiling is finished, insha'Allah by the end of the month.",
+    "date": "2026-08-04",
+    "image": "",
+    "createdAt": 1785837600000
+  },
+  {
+    "id": "ann-friday-parking",
+    "type": "announcement",
+    "title": "Parking during Friday prayers",
+    "body": "We have had several complaints from neighbours about blocked driveways on Jumu'ah.\n\nPlease park considerately, do not double-park on the main road, and leave the disabled bays free. If the masjid car park is full, the retail park opposite allows two hours free parking.",
+    "date": "2026-08-01",
+    "image": "",
+    "createdAt": 1785578400000
+  },
+  {
+    "id": "ann-agm",
+    "type": "announcement",
+    "title": "Annual general meeting — all welcome",
+    "body": "The AGM will be held on Sunday 30 August after Zuhr in the main hall.\n\nThe committee will present the year's accounts and an update on the extension. Any member wishing to raise an item should submit it to the office in writing at least one week beforehand.",
+    "date": "2026-07-30",
+    "image": "",
+    "createdAt": 1785405600000
+  },
+  {
+    "id": "ann-janaza-1",
+    "type": "death",
+    "title": "Janaza: Br. Ismail (Darnall)",
+    "body": "Inna lillahi wa inna ilayhi raji'un.\n\nThe Janaza prayer will be held after Zuhr today at the main masjid, followed by burial at City Road Cemetery. The family requests du'a and asks that condolences be given at the house after Asr.",
+    "date": "2026-08-07",
+    "image": "",
+    "createdAt": 1786096800000
+  },
+  {
+    "id": "ann-janaza-2",
+    "type": "death",
+    "title": "Janaza: Sr. Aminah (Firth Park)",
+    "body": "Inna lillahi wa inna ilayhi raji'un.\n\nJanaza will be prayed after Asr on Friday at Al-Hidayah Islamic Centre. Burial to follow at Shiregreen Cemetery. Please keep the family in your du'as.",
+    "date": "2026-08-05",
+    "image": "",
+    "createdAt": 1785924000000
+  },
+  {
+    "id": "ann-janaza-3",
+    "type": "death",
+    "title": "Janaza prayer time changed",
+    "body": "The Janaza for Br. Abdul Rahman, previously announced for after Zuhr, has been moved to after Asr to allow family travelling from Bradford to attend.\n\nJazakumullahu khayran for your patience.",
+    "date": "2026-08-03",
+    "image": "",
+    "createdAt": 1785751200000
+  },
+  {
+    "id": "ann-janaza-4",
+    "type": "death",
+    "title": "Janaza: Br. Yusuf (Attercliffe)",
+    "body": "Inna lillahi wa inna ilayhi raji'un.\n\nJanaza after Maghrib this evening at Masjid Al-Amanah. The burial will take place tomorrow morning, insha'Allah. The family has asked that flowers not be sent.",
+    "date": "2026-07-31",
+    "image": "",
+    "createdAt": 1785492000000
+  },
+  {
+    "id": "ann-janaza-5",
+    "type": "death",
+    "title": "Janaza: Sr. Khadija (Sharrow)",
+    "body": "Inna lillahi wa inna ilayhi raji'un.\n\nJanaza will be held after Zuhr on Saturday at Masjid Al-Wifaq. Sisters wishing to attend should use the Wolseley Road entrance.",
+    "date": "2026-07-28",
+    "image": "",
+    "createdAt": 1785232800000
+  },
+  {
+    "id": "ann-madrassa-enrolment",
+    "type": "madrassa",
+    "title": "Madrassa enrolment open for September",
+    "body": "Enrolment for the September intake is now open for children aged 5 to 15.\n\nClasses cover Qaidah, Nazirah, Hifz and Islamic studies, running Monday to Thursday from 5:00pm to 7:00pm. Forms are available from the masjid office or from the madrassa teachers after class.",
+    "date": "2026-08-08",
+    "image": "img/ann/madrassa.svg",
+    "createdAt": 1786176000000
+  },
+  {
+    "id": "ann-madrassa-hifz",
+    "type": "madrassa",
+    "title": "Hifz class timings updated",
+    "body": "From next week the morning Hifz class will start at 8:30am instead of 9:00am, finishing at 12:30pm.\n\nThe afternoon group is unchanged. Parents will receive a printed timetable this Thursday.",
+    "date": "2026-08-05",
+    "image": "",
+    "createdAt": 1785916800000
+  },
+  {
+    "id": "ann-madrassa-halfterm",
+    "type": "madrassa",
+    "title": "Madrassa closed for half term",
+    "body": "The madrassa will be closed from Monday 24th to Friday 28th for half term, reopening the following Monday.\n\nHifz students should continue their daily sabaq at home and revise with a parent where possible.",
+    "date": "2026-08-02",
+    "image": "",
+    "createdAt": 1785657600000
+  },
+  {
+    "id": "ann-madrassa-parents",
+    "type": "madrassa",
+    "title": "Parents' evening — Thursday",
+    "body": "Parents' evening will be held this Thursday from 6:00pm to 8:00pm in the madrassa rooms.\n\nEach teacher will be available for a short conversation about your child's progress. No appointment needed, but please arrive before 7:30pm.",
+    "date": "2026-07-29",
+    "image": "",
+    "createdAt": 1785312000000
+  },
+  {
+    "id": "ann-madrassa-qaidah",
+    "type": "madrassa",
+    "title": "New Qaidah class for beginners",
+    "body": "A new beginners' Qaidah class starts next month for children joining the madrassa for the first time.\n\nThe class will run at a slower pace with a smaller group, so children who are new to Arabic letters can settle in properly. Speak to the office to reserve a place.",
+    "date": "2026-07-26",
+    "image": "",
+    "createdAt": 1785052800000
+  },
+  {
+    "id": "ann-reminder-kahf",
+    "type": "reminder",
+    "title": "Friday sunnah: Surah Al-Kahf",
+    "body": "A reminder of the sunnah of reciting Surah Al-Kahf on the day of Jumu'ah.\n\nCopies of the Qur'an are available on the shelves at the back of the main hall, and a large-print edition is kept at the office for anyone who needs it.",
+    "date": "2026-08-07",
+    "image": "img/ann/kahf.svg",
+    "createdAt": 1786089600000
+  },
+  {
+    "id": "ann-reminder-fajr",
+    "type": "reminder",
+    "title": "Fajr Jamaat moves to 4:30am",
+    "body": "From Monday, Fajr Jamaat will be at 4:30am as the mornings continue to draw in.\n\nThe app's prayer times have already been updated, so if you have reminders switched on in Settings they will follow the new time automatically.",
+    "date": "2026-08-04",
+    "image": "",
+    "createdAt": 1785830400000
+  },
+  {
+    "id": "ann-reminder-phones",
+    "type": "reminder",
+    "title": "Please switch phones to silent",
+    "body": "We have had a number of phones ringing during salah recently, including during Jumu'ah khutbah.\n\nPlease put your phone on silent before entering the prayer hall — not vibrate, which is still audible in a quiet row.",
+    "date": "2026-08-02",
+    "image": "",
+    "createdAt": 1785664800000
+  },
+  {
+    "id": "ann-reminder-shoes",
+    "type": "reminder",
+    "title": "Use the shoe racks",
+    "body": "Please place shoes on the racks rather than on the floor by the entrance. Loose shoes in the doorway are a trip hazard, particularly for our older brothers and anyone using a stick or frame.",
+    "date": "2026-07-30",
+    "image": "",
+    "createdAt": 1785398400000
+  },
+  {
+    "id": "ann-reminder-donations",
+    "type": "reminder",
+    "title": "Donation box collection this weekend",
+    "body": "The collection boxes will be emptied and counted this Saturday after Asr.\n\nTwo volunteers are needed to help count — please let the office know if you can spare an hour.",
+    "date": "2026-07-27",
+    "image": "",
+    "createdAt": 1785139200000
   }
 ]

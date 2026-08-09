@@ -1,92 +1,47 @@
 [
   {
-    "id": "biz-1",
-    "name": "Business 1 (available)",
-    "category": "Advertise here",
-    "description": "",
-    "phone": "",
+    "id": "biz-crescent-butchers",
+    "name": "Crescent Halal Butchers",
+    "category": "Butcher & grocer",
+    "description": "Family-run halal butchers on Staniforth Road for over twenty years. Fresh lamb, beef and chicken daily, plus a full range of spices and store-cupboard staples. Bulk orders for walimas and aqiqahs welcome — please give 48 hours' notice.",
+    "phone": "01632 960703",
+    "website": "https://crescentbutchers.example.com",
+    "image": ""
+  },
+  {
+    "id": "biz-noor-tuition",
+    "name": "Noor Tuition Centre",
+    "category": "Education & tutoring",
+    "description": "After-school and weekend tuition in maths, English and science for Years 3 to 11, plus GCSE revision intensives. Small groups, DBS-checked tutors, and separate sessions for boys and girls.",
+    "phone": "07700 900184",
+    "website": "https://noortuition.example.com",
+    "image": ""
+  },
+  {
+    "id": "biz-safar-travel",
+    "name": "Safar Travel & Hajj Services",
+    "category": "Travel agent",
+    "description": "ATOL-protected Hajj and Umrah packages departing from Manchester, with group leaders from Sheffield. Also general flight booking and visa assistance. Drop into the office on Abbeydale Road or call for a quote.",
+    "phone": "01632 960876",
+    "website": "https://safartravel.example.com",
+    "image": ""
+  },
+  {
+    "id": "biz-barakah-grocers",
+    "name": "Barakah Grocers",
+    "category": "Grocery & convenience",
+    "description": "Fresh fruit and vegetables, South Asian and Middle Eastern groceries, and a bakery counter stocked daily. Open until 10pm every night, later through Ramadan.",
+    "phone": "01632 960915",
     "website": "",
     "image": ""
   },
   {
-    "id": "biz-2",
-    "name": "Business 2 (available)",
-    "category": "Advertise here",
-    "description": "",
-    "phone": "",
-    "website": "",
-    "image": ""
-  },
-  {
-    "id": "biz-3",
-    "name": "Business 3 (available)",
-    "category": "Advertise here",
-    "description": "",
-    "phone": "",
-    "website": "",
-    "image": ""
-  },
-  {
-    "id": "biz-4",
-    "name": "Business 4 (available)",
-    "category": "Advertise here",
-    "description": "",
-    "phone": "",
-    "website": "",
-    "image": ""
-  },
-  {
-    "id": "biz-5",
-    "name": "Business 5 (available)",
-    "category": "Advertise here",
-    "description": "",
-    "phone": "",
-    "website": "",
-    "image": ""
-  },
-  {
-    "id": "biz-6",
-    "name": "Business 6 (available)",
-    "category": "Advertise here",
-    "description": "",
-    "phone": "",
-    "website": "",
-    "image": ""
-  },
-  {
-    "id": "biz-7",
-    "name": "Business 7 (available)",
-    "category": "Advertise here",
-    "description": "",
-    "phone": "",
-    "website": "",
-    "image": ""
-  },
-  {
-    "id": "biz-8",
-    "name": "Business 8 (available)",
-    "category": "Advertise here",
-    "description": "",
-    "phone": "",
-    "website": "",
-    "image": ""
-  },
-  {
-    "id": "biz-9",
-    "name": "Business 9 (available)",
-    "category": "Advertise here",
-    "description": "",
-    "phone": "",
-    "website": "",
-    "image": ""
-  },
-  {
-    "id": "biz-10",
-    "name": "Business 10 (available)",
-    "category": "Advertise here",
-    "description": "",
-    "phone": "",
-    "website": "",
+    "id": "biz-hikmah-legal",
+    "name": "Hikmah Legal Advice",
+    "category": "Professional services",
+    "description": "Immigration, family and housing law from a small local practice. Free 20-minute initial consultation for members of the community, and appointments available on Saturday mornings.",
+    "phone": "01632 960260",
+    "website": "https://hikmahlegal.example.com",
     "image": ""
   }
 ]

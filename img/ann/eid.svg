@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="Eid ul-Adha prayer arrangements">
+  <defs>
+    <pattern id="girih-eid" width="150" height="150" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#C9A227" stroke-width="1.6" opacity="0.22">
+        <polygon points="75,10 96,54 144,61 109,95 117,143 75,120 33,143 41,95 6,61 54,54"/>
+        <rect x="37" y="37" width="76" height="76"/>
+        <rect x="37" y="37" width="76" height="76" transform="rotate(45 75 75)"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="#0A1247"/>
+  <rect width="1200" height="675" fill="url(#girih-eid)"/>
+  <rect x="0" y="0" width="1200" height="675" fill="#0A1247" opacity="0.55"/>
+  <g fill="none" stroke="#C9A227" stroke-width="4">
+    <rect x="120" y="112" width="180" height="180" transform="rotate(45 210 202)"/>
+    <rect x="120" y="112" width="180" height="180"/>
+  </g>
+  <circle cx="210" cy="202" r="46" fill="#C9A227" opacity="0.9"/>
+  <circle cx="228" cy="192" r="38" fill="#0A1247"/>
+  <text x="120" y="420" fill="#C9A227" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="600" letter-spacing="10">EID UL-ADHA</text>
+  <text x="120" y="500" fill="#F5F0E1" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="72" font-weight="700">Prayer Arrangements</text>
+  <rect x="120" y="540" width="220" height="5" fill="#C9A227"/>
+  <text x="120" y="600" fill="#F5F0E1" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="32" font-weight="400" opacity="0.82">Three congregations · Main hall &amp; annexe</text>
+</svg>
