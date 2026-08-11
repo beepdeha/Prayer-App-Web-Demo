@@ -13,10 +13,11 @@ import { syncSubscriptions } from "./push.js";
 import { initLinks } from "./links.js";
 import { initPrayers, refreshPrayers } from "./prayers.js";
 import { initTimetable } from "./timetable.js";
-import { initEvents } from "./events.js";
-import { initAnnouncements } from "./announcements.js";
-import { initDirectory } from "./directory.js";
+import { initEvents, getEvents, primeEvents } from "./events.js";
+import { initAnnouncements, getAnnouncements, primeAnnouncements } from "./announcements.js";
+import { initDirectory, getDirectoryUnread, primeDirectory } from "./directory.js";
 import { enter } from "./motion.js";
+import { markSeen, unreadCount } from "./seen.js";
 
 const $ = id => document.getElementById(id);
 const ONBOARD_KEY = "onboarded.v1";
@@ -60,6 +61,42 @@ async function refreshLiveContent(){
   await loadOverrides().catch(()=>{});
 }
 
+/* ---- Unread badges ----
+   BADGED sections each own a "seen" watermark; the count is how many
+   items are newer than it. Sub-tab and per-business badges are finer
+   grained and live in their own modules — these are the nav-bar ones. */
+const BADGED = ["events","announcements","directory"];
+
+async function badgeCount(name){
+  if(name==="events")        return await unreadCount("events", getEvents());
+  if(name==="announcements") return await unreadCount("announcements", getAnnouncements());
+  if(name==="directory")     return getDirectoryUnread();
+  return 0;
+}
+
+async function refreshNavBadges(which){
+  for(const name of (which && BADGED.includes(which) ? [which] : BADGED)){
+    const el = document.querySelector(`.navitem .badge[data-badge="${name}"]`);
+    if(!el) continue;
+    const n = await badgeCount(name);
+    el.textContent = n > 99 ? "99+" : String(n);
+    el.hidden = n === 0;
+  }
+}
+
+/* Each live section announces when its data changed, so the nav can
+   recount without app.js having to re-fetch anything itself. */
+document.addEventListener("content:updated", e => { refreshNavBadges(e.detail); });
+
+/* A badge for a section you have never opened is the whole point, so the
+   live collections get fetched once up front rather than waiting for
+   lazyInit. Skips whichever section is already loading itself, and never
+   lets a failed fetch break startup. */
+function primeBadges(){
+  const primes = { events:primeEvents, announcements:primeAnnouncements, directory:primeDirectory };
+  BADGED.filter(n=>!inited.has(n)).forEach(n=>{ primes[n]().catch(()=>{}); });
+}
+
 function show(name){
   if(!SECTIONS[name]) return;
   current=name;
@@ -69,6 +106,10 @@ function show(name){
   document.querySelectorAll(".navitem").forEach(b=>
     b.classList.toggle("active", b.dataset.nav===navKey));
   lazyInit(name);
+  /* Opening a section clears its nav badge straight away rather than
+     waiting for the next fetch. Finer-grained badges (announcement
+     sub-tabs, individual businesses) stay until their own item is opened. */
+  if(BADGED.includes(name)) markSeen(name).then(()=>refreshNavBadges(name));
   window.scrollTo({ top:0 });   // stays instant — never smooth-scroll a view change
   enter($(SECTIONS[name].el));
 }
@@ -108,6 +149,7 @@ function wireResumeRefresh(){
     if(document.visibilityState!=="visible") return;
     LIVE.forEach(n=>inited.delete(n));
     if(LIVE.includes(current)) lazyInit(current);   // re-fetch the visible section now
+    primeBadges();                                  // and recount the ones that stayed shut
     await loadOverrides().catch(()=>{});            // custom Jamaat times may have changed
     inited.delete("timetable");
     if(current==="timetable") lazyInit("timetable");
@@ -162,6 +204,8 @@ async function main(){
   const onboarded = await getItem(ONBOARD_KEY, false);
   if(onboarded) show("prayers");
   else await startOnboarding();
+
+  primeBadges();   // count unread for sections the user hasn't opened
 
   // apply saved notification prefs on launch
   reschedule(getSettings());

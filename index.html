@@ -4,15 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <meta name="theme-color" content="#0A1247">
-<title>Dar Ul Uloom Siddiqia Masjid</title>
+<title>Dar Ul Uloom Sheffield</title>
 <!-- ?v= busts stale browser/CDN caches; bump it whenever css/js change -->
-<link rel="stylesheet" href="css/theme.css?v=20260804f">
-<link rel="stylesheet" href="css/app.css?v=20260804f">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=20260811a">
+<link rel="stylesheet" href="css/theme.css?v=20260811a">
+<link rel="stylesheet" href="css/app.css?v=20260811a">
 </head>
 <body>
   <div class="wrap">
     <header>
-      <p class="mosque">Dar Ul Uloom<span class="mosque-sub">Siddiqia Masjid</span></p>
+      <p class="mosque">Dar Ul Uloom<span class="mosque-sub">Sheffield</span></p>
     </header>
 
     <!-- ===== PRAYERS (Today) ===== -->
@@ -62,10 +63,10 @@
       <div class="ptr" id="ptrAnn"><span class="spin"></span><span id="ptrAnnText">Pull to refresh</span></div>
       <h1 class="title">Announcements</h1>
       <div class="subtabs">
-        <button class="subtab active" data-type="announcement">Announce&shy;ments</button>
-        <button class="subtab" data-type="death">Janaza</button>
-        <button class="subtab" data-type="madrassa">Madras&shy;sa</button>
-        <button class="subtab" data-type="reminder">Remind&shy;ers</button>
+        <button class="subtab active" data-type="announcement">Announce&shy;ments<span class="badge" data-badge="announcements.announcement" hidden></span></button>
+        <button class="subtab" data-type="death">Janaza<span class="badge" data-badge="announcements.death" hidden></span></button>
+        <button class="subtab" data-type="madrassa">Madras&shy;sa<span class="badge" data-badge="announcements.madrassa" hidden></span></button>
+        <button class="subtab" data-type="reminder">Remind&shy;ers<span class="badge" data-badge="announcements.reminder" hidden></span></button>
       </div>
       <div class="list" id="annList"></div>
     </section>
@@ -79,6 +80,11 @@
       </div>
       <div id="dirList"></div>
       <div id="mosqueDetail" hidden></div>
+      <div id="dirMap" hidden>
+        <button class="backlink" id="mapBack">‹ Back to list</button>
+        <div id="mapCanvas"></div>
+        <p class="note" id="mapNote"></p>
+      </div>
     </section>
 
     <!-- ===== SETTINGS ===== -->
@@ -94,12 +100,12 @@
       <div class="list" id="aboutContent">
         <div class="item">
           <h2>Council of Mosque Sheffield</h2>
-          <p>The prayer times in this app are based on the Council of Mosque Sheffield prayer times. Dar Ul Uloom Siddiqia Masjid and several masjids around Sheffield — included in the directory — follow the same timetable. Jamaat times may differ.</p>
+          <p>The prayer times in this app are based on the Council of Mosque Sheffield prayer times. Dar Ul Uloom Sheffield and several masjids around Sheffield — included in the directory — follow the same timetable. Jamaat times may differ.</p>
         </div>
         <div class="item">
           <h2>Business and advertisement</h2>
           <p>Our mission is to bring the Muslim community closer together and closer to the Masjid and to Islam.</p>
-          <p>Our Business Directory exists to help our community benefit from the services offered by local Muslim-owned businesses. It's a win for everyone: the community gets easy access to trusted local services, the businesses gain visibility and custom, and every business that advertises with us also directly supports Dar Ul Uloom Siddiqia Masjid.</p>
+          <p>Our Business Directory exists to help our community benefit from the services offered by local Muslim-owned businesses. It's a win for everyone: the community gets easy access to trusted local services, the businesses gain visibility and custom, and every business that advertises with us also directly supports Dar Ul Uloom Sheffield.</p>
           <p>For more information, please email farhanfns1@gmail.com.</p>
         </div>
         <div class="item" id="creditsBox">
@@ -124,15 +130,18 @@
     <button class="navitem" data-nav="timetable">
       <span class="ico"><svg viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2zM5 9v10h14V9H5z"/></svg></span>Timetable</button>
     <button class="navitem" data-nav="events">
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2zM5 9v10h14V9H5zm7 2.4a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></span>Events</button>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2zM5 9v10h14V9H5zm7 2.4a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg><span class="badge" data-badge="events" hidden></span></span>Events</button>
     <button class="navitem" data-nav="announcements">
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4zm12-.5a4 4 0 0 1 0 7z"/></svg></span>Announce&shy;ments</button>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4zm12-.5a4 4 0 0 1 0 7z"/></svg><span class="badge" data-badge="announcements" hidden></span></span>Announce&shy;ments</button>
     <button class="navitem" data-nav="directory">
-      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></span>Directory</button>
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg><span class="badge" data-badge="directory" hidden></span></span>Directory</button>
     <button class="navitem" data-nav="settings">
       <span class="ico"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M19.43 12.98c.04-.32.07-.64.07-.98 0-.34-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98 0 .33.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></span>Settings</button>
   </nav>
 
-  <script type="module" src="js/app.js?v=20260804f"></script>
+  <!-- Leaflet is bundled locally (like the Inter font) so the map engine
+       works offline; only the tile imagery needs a connection. -->
+  <script src="vendor/leaflet/leaflet.js?v=20260811a"></script>
+  <script type="module" src="js/app.js?v=20260811a"></script>
 </body>
 </html>

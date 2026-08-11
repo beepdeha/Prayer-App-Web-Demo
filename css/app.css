@@ -209,6 +209,29 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .dir-grid .card-sq.placeholder h2{color:var(--muted);font-weight:700;}
 .dir-grid .card-sq.placeholder .meta{color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
 
+/* ---------- Directory map ---------- */
+.mapbtn{ width:100%;justify-content:center;margin-bottom:4px; }
+#mapCanvas{
+  height:min(60vh,460px);margin-top:14px;
+  background:var(--card);border:2px solid var(--brand);
+}
+/* Leaflet ships rounded popups and a rounded zoom control; square them
+   off so the map reads as part of this app rather than a foreign widget. */
+#mapCanvas .leaflet-popup-content-wrapper,
+#mapCanvas .leaflet-popup-tip,
+#mapCanvas .leaflet-bar,
+#mapCanvas .leaflet-bar a{ border-radius:0; }
+#mapCanvas .leaflet-popup-content{ font-family:inherit;color:var(--ink);margin:12px 14px;line-height:1.45; }
+#mapCanvas .leaflet-popup-content strong{ font-size:calc(1rem*var(--fs));font-weight:700; }
+#mapCanvas .leaflet-popup-content span{ color:var(--muted);font-size:calc(.85rem*var(--fs)); }
+#mapCanvas .map-detail{
+  margin-top:10px;background:var(--brand);color:var(--on-brand);border:none;
+  padding:8px 14px;font-weight:700;font-size:calc(.88rem*var(--fs));
+  font-family:inherit;cursor:pointer;
+  transition:transform 160ms var(--ease-out);
+}
+#mapCanvas .map-detail:active{ transform:scale(.97); }
+
 /* ---------- Settings ---------- */
 .settings{margin-top:18px;display:flex;flex-direction:column;gap:14px;}
 .set-card{ background:var(--card);box-shadow:0 8px 22px rgba(10,18,71,.10);padding:16px; }
@@ -267,6 +290,29 @@ select.sel{ padding:9px 10px;border:2px solid var(--line);background:var(--card)
 .navitem .ico svg{width:100%;height:100%;fill:currentColor;display:block;}
 .navitem.active{color:var(--nav-active);}
 .navitem:active{transform:scale(.96);}
+
+/* ---------- Unread badge ----------
+   The third and final sanctioned exception to the Square Corner Rule
+   (alongside the settings toggle and the pull-to-refresh spinner): a
+   circular count badge is near-universal native convention and reads
+   as status chrome, not as one of the app's surfaces.
+   Radius is a pill rather than 50% so a two-digit count stays legible
+   instead of squashing into an ellipse. Size is fixed rather than
+   scaled by --fs, for the same reason the nav itself opts out. */
+.navitem .ico, .subtab, .dir-grid .card-sq{ position:relative; }
+.badge{
+  position:absolute;top:-5px;right:-8px;
+  min-width:16px;height:16px;padding:0 4px;
+  border-radius:999px;
+  background:var(--danger);color:var(--on-danger);
+  font-size:.62rem;font-weight:700;line-height:16px;text-align:center;
+  font-variant-numeric:tabular-nums;
+  box-shadow:0 2px 4px rgba(10,18,71,.25);
+  pointer-events:none;
+}
+/* Sub-tabs and directory tiles are padded boxes, so their badge tucks
+   into the corner instead of hanging off an icon's edge. */
+.subtab .badge, .dir-grid .card-sq .badge{ top:5px;right:5px; }
 
 /* ---------- "More" drawer ---------- */
 .drawer-backdrop{ position:fixed;inset:0;background:rgba(6,8,31,.5);z-index:40; }
@@ -395,6 +441,13 @@ body{ font-weight:400; }
 .list.stagger > *:nth-child(n+6){animation-delay:200ms;}
 @keyframes item-in{ from{ opacity:0;transform:translateY(8px); } }
 
+/* ---- Badge entrance ----
+   Plain CSS animation rather than motion.js's enter(): badges re-render
+   with every list render, and enter()'s remove/reflow/re-add replay is
+   built for whole-view entrances, not dozens of list items. */
+.badge{ animation:badge-in 160ms var(--ease-out); }
+@keyframes badge-in{ from{ opacity:0;transform:scale(.4); } }
+
 /* ---- Reduced motion ----
    Gentler, not zero: the fades stay (they still bridge the content swap),
    the movement goes. The stagger is skipped in JS. */
@@ -408,6 +461,7 @@ body{ font-weight:400; }
   .navitem:active,.onboard-continue:active,.seg button:active,
   .subtab:active{ transform:none; }
   .list.stagger > *{ animation:none; }
+  .badge{ animation-name:fade-in; }   /* keep the fade, drop the pop */
 }
 
 /* ---- Hover ----

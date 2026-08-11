@@ -5,14 +5,38 @@
 import { loadCollection } from "./firebase.js";
 import { normalizeUrl } from "./links.js";
 import { enter } from "./motion.js";
+import { getLastSeen, markSeen } from "./seen.js";
+import { showMap, hideMap, setDetailHandler } from "./map.js";
 
 const $ = id => document.getElementById(id);
 let activeTab = "mosques";
 let mosques = [];
 let businesses = [];
 let offersByBiz = {};
+/* businessId -> count of offers newer than the last time this device
+   opened that business. Precomputed because seen.js is async but the
+   grid renderers are not. */
+let unseenByBiz = {};
 
-const BUSINESS_INTRO = "Our Business Directory exists to help our community benefit from the services offered by local Muslim-owned businesses. It's a win for everyone: the community gets easy access to trusted local services, the businesses gain visibility and custom, and every business that advertises with us also directly supports Dar Ul Uloom Siddiqia Masjid.";
+export const getDirectoryUnread = () =>
+  Object.values(unseenByBiz).filter(n => n > 0).length;
+
+async function computeUnseen(){
+  const next = {};
+  for(const b of businesses){
+    const last = await getLastSeen(`directory.business.${b.id}`);
+    /* Never seen this business before: treat its existing offers as read,
+       matching seen.js's quiet-first-run rule, so a fresh install does not
+       badge every business at once. */
+    next[b.id] = last === null
+      ? 0
+      : (offersByBiz[b.id] || []).filter(o => (o.createdAt || 0) > last).length;
+    if(last === null) await markSeen(`directory.business.${b.id}`);
+  }
+  unseenByBiz = next;
+}
+
+const BUSINESS_INTRO = "Our Business Directory exists to help our community benefit from the services offered by local Muslim-owned businesses. It's a win for everyone: the community gets easy access to trusted local services, the businesses gain visibility and custom, and every business that advertises with us also directly supports Dar Ul Uloom Sheffield.";
 
 function esc(s=""){ return String(s).replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
 
@@ -29,24 +53,38 @@ function showSection(cls="fade-enter"){
   document.querySelectorAll("#directoryView .subtab").forEach(b=>
     b.classList.toggle("active", b.dataset.dir===activeTab));
   $("mosqueDetail").hidden=true;
+  hideMap();
   $("dirList").hidden=false;
   activeTab==="mosques" ? renderMasjids() : renderBusinesses();
   enter($("dirList"), cls);
 }
 const backToList = ()=>showSection("back-enter");
 
+/* Opening the map, and coming back out of a detail page that was reached
+   from it, both route through here so "back" lands where the user came
+   from rather than always dumping them on the grid. */
+function openMap(){ showMap(mosques, { onBack: backToList }); }
+setDetailHandler(id => { showMasjid(id); $("backBtn").onclick = openMap; });
+
 /* ---------- Masjids (square cards, 2-up) ---------- */
 function renderMasjids(){
   const list=$("dirList");
   if(!mosques.length){ list.innerHTML=`<p class="empty">No masjids listed yet.</p>`; return; }
-  list.innerHTML = `<div class="dir-grid">` + mosques.map(m=>{
-    const placeholder = isPlaceholder(m.name);
-    return `<div class="card-sq${placeholder?" placeholder":""}" data-id="${esc(m.id)}">
-      <h2>${esc(m.name||"Masjid")}</h2>
-      ${placeholder ? `<div class="meta">Reserved &middot; coming soon</div>`
-        : (m.area?`<div class="meta">${esc(m.area)}</div>`:"")}
-    </div>`;
-  }).join("") + `</div>`;
+  /* Only offer the map once at least one masjid actually has a pin,
+     otherwise it opens onto an empty map. */
+  const anyPinned = mosques.some(m=>Number.isFinite(m.lat) && Number.isFinite(m.lng));
+  list.innerHTML =
+    (anyPinned ? `<button class="backlink mapbtn" id="viewMapBtn">📍 View on map</button>` : "") +
+    `<div class="dir-grid">` + mosques.map(m=>{
+      const placeholder = isPlaceholder(m.name);
+      return `<div class="card-sq${placeholder?" placeholder":""}" data-id="${esc(m.id)}">
+        <h2>${esc(m.name||"Masjid")}</h2>
+        ${placeholder ? `<div class="meta">Reserved &middot; coming soon</div>`
+          : (m.area?`<div class="meta">${esc(m.area)}</div>`:"")}
+      </div>`;
+    }).join("") + `</div>`;
+  const mapBtn = $("viewMapBtn");
+  if(mapBtn) mapBtn.onclick = openMap;
   list.querySelectorAll(".card-sq").forEach(el=> el.onclick=()=>showMasjid(el.dataset.id));
 }
 
@@ -62,7 +100,7 @@ function field(lbl, val, href, linkLabel){
 
 function showMasjid(id){
   const m=mosques.find(x=>x.id===id); if(!m) return;
-  $("dirList").hidden=true;
+  $("dirList").hidden=true; hideMap();
   const box=$("mosqueDetail"); box.hidden=false;
   const jummah = Array.isArray(m.jummah)
     ? m.jummah.map(j=>`${esc(j.label||"Jummah")}: ${esc(j.time||"")}`).join("<br>")
@@ -94,10 +132,12 @@ function renderBusinesses(){
   if(!businesses.length){ list.innerHTML=intro+`<p class="empty">No businesses listed yet.</p>`; return; }
   list.innerHTML = intro + `<div class="dir-grid">` + businesses.map(b=>{
     const placeholder = isPlaceholder(b.name);
+    const unseen = unseenByBiz[b.id] || 0;
     return `<div class="card-sq${placeholder?" placeholder":""}" data-id="${esc(b.id)}">
       <h2>${esc(b.name||"")}</h2>
       ${placeholder ? `<div class="meta">Advertise here</div>`
         : (b.category?`<div class="meta">${esc(b.category)}</div>`:"")}
+      ${unseen ? `<span class="badge">${unseen>99?"99+":unseen}</span>` : ""}
     </div>`;
   }).join("") + `</div>`;
   list.querySelectorAll(".card-sq").forEach(el=> el.onclick=()=>showBusiness(el.dataset.id));
@@ -105,7 +145,11 @@ function renderBusinesses(){
 
 function showBusiness(id){
   const b=businesses.find(x=>x.id===id); if(!b) return;
-  $("dirList").hidden=true;
+  /* Opening a business clears its tile badge and the Directory nav count. */
+  unseenByBiz[id] = 0;
+  markSeen(`directory.business.${id}`);
+  document.dispatchEvent(new CustomEvent("content:updated", { detail:"directory" }));
+  $("dirList").hidden=true; hideMap();
   const box=$("mosqueDetail"); box.hidden=false;
   const offers=(offersByBiz[id]||[]).sort((x,y)=>(y.createdAt||0)-(x.createdAt||0));
   const offersHtml = offers.length ? `
@@ -135,11 +179,8 @@ function showBusiness(id){
   enter(box, "detail-enter");
 }
 
-export async function initDirectory(){
-  $("dirList").innerHTML=`<p class="empty">Loading…</p>`;
-  document.querySelectorAll("#directoryView .subtab").forEach(b=>{
-    b.onclick=()=>{ activeTab=b.dataset.dir; showSection(); };   // fade
-  });
+/* Shared by the full init and by the badge-only prime below. */
+async function loadData(){
   const [m,b,o]=await Promise.all([
     loadCollection("mosques",{ orderField:"name", desc:false }),
     loadCollection("businesses",{ orderField:"name", desc:false }),
@@ -149,5 +190,19 @@ export async function initDirectory(){
   businesses=b.data||[];
   offersByBiz={};
   (o.data||[]).forEach(of=>{ (offersByBiz[of.businessId] ||= []).push(of); });
+  await computeUnseen();
+  document.dispatchEvent(new CustomEvent("content:updated", { detail:"directory" }));
+}
+
+/* Fetch without rendering, so the nav badge is right even for a section
+   the user has never opened. */
+export async function primeDirectory(){ await loadData(); }
+
+export async function initDirectory(){
+  $("dirList").innerHTML=`<p class="empty">Loading…</p>`;
+  document.querySelectorAll("#directoryView .subtab").forEach(b=>{
+    b.onclick=()=>{ activeTab=b.dataset.dir; showSection(); };   // fade
+  });
+  await loadData();
   showSection();
 }

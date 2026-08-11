@@ -9,6 +9,8 @@
     "email": "info@as-sakinah.example.com",
     "website": "https://as-sakinah.example.com",
     "location": "https://maps.google.com/?q=Darnall+Sheffield",
+    "lat": 53.3806,
+    "lng": -1.403,
     "notes": "Wheelchair access via the side entrance. Sisters' prayer hall on the first floor."
   },
   {
@@ -21,6 +23,8 @@
     "email": "office@alhidayah.example.com",
     "website": "",
     "location": "https://maps.google.com/?q=Firth+Park+Sheffield",
+    "lat": 53.4183,
+    "lng": -1.4497,
     "notes": "Daily madrassa 5:00pm–7:00pm. Car park to the rear."
   },
   {
@@ -33,6 +37,8 @@
     "email": "",
     "website": "https://alwifaq.example.com",
     "location": "https://maps.google.com/?q=Sharrow+Sheffield",
+    "lat": 53.3672,
+    "lng": -1.4818,
     "notes": ""
   },
   {
@@ -45,6 +51,8 @@
     "email": "salaam@baytannur.example.com",
     "website": "",
     "location": "https://maps.google.com/?q=Nether+Edge+Sheffield",
+    "lat": 53.3618,
+    "lng": -1.4922,
     "notes": "Community kitchen every Saturday after Maghrib."
   },
   {
@@ -57,6 +65,8 @@
     "email": "contact@alamanah.example.com",
     "website": "https://alamanah.example.com",
     "location": "https://maps.google.com/?q=Attercliffe+Sheffield",
+    "lat": 53.3899,
+    "lng": -1.4145,
     "notes": "Follows the Council of Mosque Sheffield timetable."
   }
 ]

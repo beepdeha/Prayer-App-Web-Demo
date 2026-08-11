@@ -34,6 +34,8 @@
   --nav-bg:#0A1247;         /* navy bottom-nav bar */
   --nav-ink:rgba(245,240,225,.62);
   --nav-active:#E3C46A;     /* light gold active */
+  --danger:#B3402E;         /* unread badge fill — warm brick, not a stock alarm red */
+  --on-danger:#F5F0E1;      /* badge number, cream (matches --on-brand) not pure white */
   --pattern:url('../img/pattern-light.svg');
   --fs:1;
 
@@ -66,5 +68,9 @@ html[data-theme="dark"]{
   --nav-bg:#06081f;
   --nav-ink:rgba(245,240,225,.55);
   --nav-active:#E3C46A;
+  /* Badge stays the same red in both themes — it always sits on navy nav
+     chrome or a card, never on the page background, so it doesn't invert. */
+  --danger:#C24A36;         /* a touch lighter than light mode, to hold up on dark navy */
+  --on-danger:#F5F0E1;
   --pattern:url('../img/pattern-dark.svg');
 }
