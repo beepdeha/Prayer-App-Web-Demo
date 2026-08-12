@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#0A1247">
 <title>Dar Ul Uloom Sheffield</title>
 <!-- ?v= busts stale browser/CDN caches; bump it whenever css/js change -->
-<link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=20260811a">
-<link rel="stylesheet" href="css/theme.css?v=20260811a">
-<link rel="stylesheet" href="css/app.css?v=20260811a">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=20260811b">
+<link rel="stylesheet" href="css/theme.css?v=20260811b">
+<link rel="stylesheet" href="css/app.css?v=20260811b">
 </head>
 <body>
   <div class="wrap">
@@ -76,7 +76,7 @@
       <h1 class="title">Directory</h1>
       <div class="subtabs">
         <button class="subtab active" data-dir="mosques">Masjids</button>
-        <button class="subtab" data-dir="businesses">Businesses</button>
+        <button class="subtab" data-dir="businesses">Businesses<span class="badge" data-badge="directory.businesses" hidden></span></button>
       </div>
       <div id="dirList"></div>
       <div id="mosqueDetail" hidden></div>
@@ -141,7 +141,7 @@
 
   <!-- Leaflet is bundled locally (like the Inter font) so the map engine
        works offline; only the tile imagery needs a connection. -->
-  <script src="vendor/leaflet/leaflet.js?v=20260811a"></script>
-  <script type="module" src="js/app.js?v=20260811a"></script>
+  <script src="vendor/leaflet/leaflet.js?v=20260811b"></script>
+  <script type="module" src="js/app.js?v=20260811b"></script>
 </body>
 </html>

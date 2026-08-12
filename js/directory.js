@@ -21,6 +21,18 @@ let unseenByBiz = {};
 export const getDirectoryUnread = () =>
   Object.values(unseenByBiz).filter(n => n > 0).length;
 
+/* The Businesses sub-tab carries the same count as the Directory nav icon:
+   opening the section clears the nav badge, but this one stays until the
+   business itself has been opened, so "something new is in here" survives
+   the trip from the nav bar into the section. */
+function refreshSubtabBadge(){
+  const el = document.querySelector('#directoryView .subtab .badge[data-badge="directory.businesses"]');
+  if(!el) return;
+  const n = getDirectoryUnread();
+  el.textContent = n > 99 ? "99+" : String(n);
+  el.hidden = n === 0;
+}
+
 async function computeUnseen(){
   const next = {};
   for(const b of businesses){
@@ -34,9 +46,40 @@ async function computeUnseen(){
     if(last === null) await markSeen(`directory.business.${b.id}`);
   }
   unseenByBiz = next;
+  refreshSubtabBadge();
+}
+
+/* Clears every business at once. Deliberately marks each one seen rather
+   than wiping the keys: a missing key means "never visited", which
+   computeUnseen() would re-seed to now anyway — same result, but marking
+   is explicit about what happened. */
+async function resetAllBizNotifications(){
+  await Promise.all(businesses.map(b => markSeen(`directory.business.${b.id}`)));
+  unseenByBiz = {};
+  refreshSubtabBadge();
+  document.dispatchEvent(new CustomEvent("content:updated", { detail:"directory" }));
+  renderBusinesses();
 }
 
 const BUSINESS_INTRO = "Our Business Directory exists to help our community benefit from the services offered by local Muslim-owned businesses. It's a win for everyone: the community gets easy access to trusted local services, the businesses gain visibility and custom, and every business that advertises with us also directly supports Dar Ul Uloom Sheffield.";
+
+/* Mirrors the admin's category <select>. Anything not on this list — a
+   legacy free-text value from before the dropdown existed, or a future
+   category added to the admin but not here — falls into "Others" rather
+   than silently vanishing from the filter. */
+const KNOWN_CATEGORIES = ["Butcher & grocer","Education & tutoring","Travel agent",
+                          "Grocery & convenience","Professional services"];
+const bucketFor = cat => KNOWN_CATEGORIES.includes(cat) ? cat : "Others";
+let categoryFilter = "all";
+
+/* Hand-drawn to match the nav icons — no icon font, no sprite, nothing
+   fetched at runtime. Each is a 24x24 viewBox so .social-ico sizes them
+   the same way .ico does. */
+const SOCIAL_SVG = {
+  tiktok: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 2h-2.7v13.2a2.6 2.6 0 1 1-2-2.5V9.9a5.7 5.7 0 1 0 4.7 5.6V8.9a6.6 6.6 0 0 0 3.8 1.2V7.3a3.9 3.9 0 0 1-3.8-3.9V2z"/></svg>`,
+  instagram: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9A5.5 5.5 0 0 1 16.5 22h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2zm0 2A3.5 3.5 0 0 0 4 7.5v9A3.5 3.5 0 0 0 7.5 20h9a3.5 3.5 0 0 0 3.5-3.5v-9A3.5 3.5 0 0 0 16.5 4h-9zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.6-2.9a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/></svg>`,
+  facebook: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.6 1.6-1.6h1.7V4.1A22 22 0 0 0 14.3 4C11.9 4 10.3 5.5 10.3 8.2v2.4H7.5v3.2h2.8V22h3.2z"/></svg>`,
+};
 
 function esc(s=""){ return String(s).replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
 
@@ -130,16 +173,41 @@ function renderBusinesses(){
   const list=$("dirList");
   const intro = `<div class="intro">${esc(BUSINESS_INTRO)}</div>`;
   if(!businesses.length){ list.innerHTML=intro+`<p class="empty">No businesses listed yet.</p>`; return; }
-  list.innerHTML = intro + `<div class="dir-grid">` + businesses.map(b=>{
-    const placeholder = isPlaceholder(b.name);
-    const unseen = unseenByBiz[b.id] || 0;
-    return `<div class="card-sq${placeholder?" placeholder":""}" data-id="${esc(b.id)}">
-      <h2>${esc(b.name||"")}</h2>
-      ${placeholder ? `<div class="meta">Advertise here</div>`
-        : (b.category?`<div class="meta">${esc(b.category)}</div>`:"")}
-      ${unseen ? `<span class="badge">${unseen>99?"99+":unseen}</span>` : ""}
+
+  /* Only offer categories that something is actually filed under, so the
+     dropdown never lists an empty bucket and "Others" only shows up when
+     a business genuinely falls outside the known set. */
+  const cats = [...new Set(businesses.map(b=>bucketFor(b.category)))].sort();
+  const filtered = categoryFilter==="all"
+    ? businesses
+    : businesses.filter(b=>bucketFor(b.category)===categoryFilter);
+
+  const controls = `
+    <button class="backlink resetbtn" id="resetBizNotif">Reset all business notifications</button>
+    <div class="dir-filter">
+      <select class="sel" id="bizCatFilter" aria-label="Filter by category">
+        <option value="all"${categoryFilter==="all"?" selected":""}>All categories</option>
+        ${cats.map(c=>`<option value="${esc(c)}"${categoryFilter===c?" selected":""}>${esc(c)}</option>`).join("")}
+      </select>
     </div>`;
-  }).join("") + `</div>`;
+
+  const grid = filtered.length
+    ? `<div class="dir-grid">` + filtered.map(b=>{
+        const placeholder = isPlaceholder(b.name);
+        const unseen = unseenByBiz[b.id] || 0;
+        return `<div class="card-sq${placeholder?" placeholder":""}" data-id="${esc(b.id)}">
+          ${(!placeholder && b.image) ? `<img class="biz-thumb" src="${esc(b.image)}" alt="" loading="lazy">` : ""}
+          <h2>${esc(b.name||"")}</h2>
+          ${placeholder ? `<div class="meta">Advertise here</div>`
+            : (b.category?`<div class="meta">${esc(b.category)}</div>`:"")}
+          ${unseen ? `<span class="badge">${unseen>99?"99+":unseen}</span>` : ""}
+        </div>`;
+      }).join("") + `</div>`
+    : `<p class="empty">No businesses in this category yet.</p>`;
+
+  list.innerHTML = intro + controls + grid;
+  $("resetBizNotif").onclick = resetAllBizNotifications;
+  $("bizCatFilter").onchange = e=>{ categoryFilter = e.target.value; renderBusinesses(); };
   list.querySelectorAll(".card-sq").forEach(el=> el.onclick=()=>showBusiness(el.dataset.id));
 }
 
@@ -148,13 +216,25 @@ function showBusiness(id){
   /* Opening a business clears its tile badge and the Directory nav count. */
   unseenByBiz[id] = 0;
   markSeen(`directory.business.${id}`);
+  refreshSubtabBadge();
   document.dispatchEvent(new CustomEvent("content:updated", { detail:"directory" }));
   $("dirList").hidden=true; hideMap();
   const box=$("mosqueDetail"); box.hidden=false;
   const offers=(offersByBiz[id]||[]).sort((x,y)=>(y.createdAt||0)-(x.createdAt||0));
+  const socialLinks = [
+    b.tiktok    && { key:"tiktok",    url:b.tiktok,    label:"TikTok" },
+    b.instagram && { key:"instagram", url:b.instagram, label:"Instagram" },
+    b.facebook  && { key:"facebook",  url:b.facebook,  label:"Facebook" },
+  ].filter(Boolean);
+  /* data-external so links.js routes these out to the real app/browser
+     even if the admin typed a bare handle without a scheme. */
+  const socialHtml = socialLinks.length ? `<div class="social-row">${socialLinks.map(s=>
+    `<a href="${esc(normalizeUrl(s.url))}" class="social-ico" data-external="1" aria-label="${esc(s.label)}">${SOCIAL_SVG[s.key]}</a>`
+  ).join("")}</div>` : "";
+
   const offersHtml = offers.length ? `
     <div class="detail">
-      <h2 class="section-cap">Offers &amp; News</h2>
+      <h2 class="section-cap offers-cap">Offers &amp; News</h2>
       ${offers.map(o=>`<div class="offer">
         ${o.createdAt?`<div class="meta">${new Date(o.createdAt).toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"})}</div>`:""}
         <h3>${esc(o.title||"")}</h3>
@@ -169,8 +249,10 @@ function showBusiness(id){
     ${b.image?`<div class="card" style="margin-top:14px"><img src="${esc(b.image)}" alt="" style="width:100%;display:block"></div>`:""}
     <div class="detail">
       ${b.description?`<div class="field"><div class="val">${esc(b.description).replace(/\n/g,"<br>")}</div></div>`:""}
+      ${field("Address", b.address)}
       ${field("Phone", b.phone, b.phone?`tel:${b.phone}`:null)}
       ${field("Website", b.website, b.website?normalizeUrl(b.website):null)}
+      ${socialHtml}
     </div>
     ${offersHtml}`;
   $("backBtn").onclick=backToList;
