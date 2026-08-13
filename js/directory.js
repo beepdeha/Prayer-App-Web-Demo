@@ -7,6 +7,7 @@ import { normalizeUrl } from "./links.js";
 import { enter } from "./motion.js";
 import { getLastSeen, markSeen } from "./seen.js";
 import { showMap, hideMap, setDetailHandler } from "./map.js";
+import { displayCategory } from "./categories.js";
 
 const $ = id => document.getElementById(id);
 let activeTab = "mosques";
@@ -63,14 +64,39 @@ async function resetAllBizNotifications(){
 
 const BUSINESS_INTRO = "Our Business Directory exists to help our community benefit from the services offered by local Muslim-owned businesses. It's a win for everyone: the community gets easy access to trusted local services, the businesses gain visibility and custom, and every business that advertises with us also directly supports Dar Ul Uloom Sheffield.";
 
-/* Mirrors the admin's category <select>. Anything not on this list — a
-   legacy free-text value from before the dropdown existed, or a future
-   category added to the admin but not here — falls into "Others" rather
-   than silently vanishing from the filter. */
-const KNOWN_CATEGORIES = ["Butcher & grocer","Education & tutoring","Travel agent",
-                          "Grocery & convenience","Professional services"];
-const bucketFor = cat => KNOWN_CATEGORIES.includes(cat) ? cat : "Others";
 let categoryFilter = "all";
+
+/* Copy-to-clipboard for address and phone. navigator.clipboard needs a
+   secure context, which the Capacitor webview and localhost both are,
+   but a plain-http LAN preview is not — hence the execCommand fallback. */
+const COPY_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>`;
+const TICK_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>`;
+
+async function copyText(text){
+  try{
+    if(navigator.clipboard?.writeText){ await navigator.clipboard.writeText(text); return true; }
+  }catch{ /* fall through */ }
+  try{
+    const ta=document.createElement("textarea");
+    ta.value=text; ta.setAttribute("readonly","");
+    ta.style.cssText="position:fixed;top:-1000px;opacity:0";
+    document.body.appendChild(ta); ta.select();
+    const ok=document.execCommand("copy");
+    ta.remove(); return ok;
+  }catch{ return false; }
+}
+
+/* Delegated so it survives every re-render of the detail pane. */
+document.addEventListener("click", async e=>{
+  const btn = e.target.closest(".copybtn");
+  if(!btn) return;
+  e.preventDefault(); e.stopPropagation();
+  const ok = await copyText(btn.dataset.copy || "");
+  if(!ok) return;
+  btn.classList.add("copied");
+  btn.innerHTML = TICK_SVG;
+  setTimeout(()=>{ btn.classList.remove("copied"); btn.innerHTML = COPY_SVG; }, 1600);
+});
 
 /* Hand-drawn to match the nav icons — no icon font, no sprite, nothing
    fetched at runtime. Each is a 24x24 viewBox so .social-ico sizes them
@@ -135,10 +161,15 @@ function renderMasjids(){
    meaningful as a destination, not to read (a Maps URL) — phone/email/
    website calls omit it and keep showing the real value, since those ARE
    meant to be read. */
-function field(lbl, val, href, linkLabel){
+function field(lbl, val, href, linkLabel, opts={}){
   if(!val) return "";
   const inner = href ? `<a href="${esc(href)}">${esc(linkLabel||val)}</a>` : esc(val);
-  return `<div class="field"><div class="lbl">${lbl}</div><div class="val">${inner}</div></div>`;
+  const copy = opts.copy
+    ? `<button class="copybtn" data-copy="${esc(val)}" aria-label="Copy ${esc(lbl).toLowerCase()}" title="Copy">${COPY_SVG}</button>`
+    : "";
+  return `<div class="field${copy?" has-copy":""}">
+    <div class="fieldmain"><div class="lbl">${lbl}</div><div class="val">${inner}</div></div>${copy}
+  </div>`;
 }
 
 function showMasjid(id){
@@ -153,9 +184,9 @@ function showMasjid(id){
     <h1 class="title" style="margin-top:10px">${esc(m.name||"Masjid")}</h1>
     ${m.area?`<p class="subtitle">${esc(m.area)}</p>`:""}
     <div class="detail">
-      ${field("Address", m.address)}
-      ${jummah?`<div class="field"><div class="lbl">Jummah</div><div class="val">${jummah}</div></div>`:""}
-      ${field("Phone", m.phone, m.phone?`tel:${m.phone}`:null)}
+      ${field("Address", m.address, null, null, { copy:true })}
+      ${jummah?`<div class="field"><div class="fieldmain"><div class="lbl">Jummah</div><div class="val">${jummah}</div></div></div>`:""}
+      ${field("Phone", m.phone, m.phone?`tel:${m.phone}`:null, null, { copy:true })}
       ${field("Email", m.email, m.email?`mailto:${m.email}`:null)}
       ${field("Website", m.website, m.website?normalizeUrl(m.website):null)}
       ${field("Location", m.location, m.location?normalizeUrl(m.location):null, "Get directions")}
@@ -174,32 +205,32 @@ function renderBusinesses(){
   const intro = `<div class="intro">${esc(BUSINESS_INTRO)}</div>`;
   if(!businesses.length){ list.innerHTML=intro+`<p class="empty">No businesses listed yet.</p>`; return; }
 
-  /* Only offer categories that something is actually filed under, so the
-     dropdown never lists an empty bucket and "Others" only shows up when
-     a business genuinely falls outside the known set. */
-  const cats = [...new Set(businesses.map(b=>bucketFor(b.category)))].sort();
+  /* Only primary types that something is actually filed under, so the
+     filter never offers a category that would return an empty grid. */
+  const cats = [...new Set(businesses.map(b=>(b.categoryPrimary||"").trim()).filter(Boolean))].sort();
   const filtered = categoryFilter==="all"
     ? businesses
-    : businesses.filter(b=>bucketFor(b.category)===categoryFilter);
+    : businesses.filter(b=>(b.categoryPrimary||"").trim()===categoryFilter);
 
   const controls = `
-    <button class="backlink resetbtn" id="resetBizNotif">Reset all business notifications</button>
     <div class="dir-filter">
       <select class="sel" id="bizCatFilter" aria-label="Filter by category">
         <option value="all"${categoryFilter==="all"?" selected":""}>All categories</option>
         ${cats.map(c=>`<option value="${esc(c)}"${categoryFilter===c?" selected":""}>${esc(c)}</option>`).join("")}
       </select>
+      <button class="backlink resetbtn" id="resetBizNotif" title="Mark every business as read">Reset alerts</button>
     </div>`;
 
   const grid = filtered.length
     ? `<div class="dir-grid">` + filtered.map(b=>{
         const placeholder = isPlaceholder(b.name);
         const unseen = unseenByBiz[b.id] || 0;
+        const cat = displayCategory(b);
         return `<div class="card-sq${placeholder?" placeholder":""}" data-id="${esc(b.id)}">
           ${(!placeholder && b.image) ? `<img class="biz-thumb" src="${esc(b.image)}" alt="" loading="lazy">` : ""}
           <h2>${esc(b.name||"")}</h2>
           ${placeholder ? `<div class="meta">Advertise here</div>`
-            : (b.category?`<div class="meta">${esc(b.category)}</div>`:"")}
+            : (cat?`<div class="meta">${esc(cat)}</div>`:"")}
           ${unseen ? `<span class="badge">${unseen>99?"99+":unseen}</span>` : ""}
         </div>`;
       }).join("") + `</div>`
@@ -228,9 +259,13 @@ function showBusiness(id){
   ].filter(Boolean);
   /* data-external so links.js routes these out to the real app/browser
      even if the admin typed a bare handle without a scheme. */
-  const socialHtml = socialLinks.length ? `<div class="social-row">${socialLinks.map(s=>
-    `<a href="${esc(normalizeUrl(s.url))}" class="social-ico" data-external="1" aria-label="${esc(s.label)}">${SOCIAL_SVG[s.key]}</a>`
-  ).join("")}</div>` : "";
+  const socialHtml = socialLinks.length ? `
+    <div class="field social-field">
+      <div class="lbl">Social media</div>
+      <div class="social-row">${socialLinks.map(s=>
+        `<a href="${esc(normalizeUrl(s.url))}" class="social-ico" data-external="1" aria-label="${esc(s.label)}">${SOCIAL_SVG[s.key]}</a>`
+      ).join("")}</div>
+    </div>` : "";
 
   const offersHtml = offers.length ? `
     <div class="detail">
@@ -245,12 +280,12 @@ function showBusiness(id){
   box.innerHTML=`
     <button class="backlink" id="backBtn">‹ All businesses</button>
     <h1 class="title" style="margin-top:10px">${esc(b.name||"")}</h1>
-    ${b.category?`<p class="subtitle">${esc(b.category)}</p>`:""}
+    ${displayCategory(b)?`<p class="subtitle">${esc(displayCategory(b))}</p>`:""}
     ${b.image?`<div class="card" style="margin-top:14px"><img src="${esc(b.image)}" alt="" style="width:100%;display:block"></div>`:""}
     <div class="detail">
       ${b.description?`<div class="field"><div class="val">${esc(b.description).replace(/\n/g,"<br>")}</div></div>`:""}
-      ${field("Address", b.address)}
-      ${field("Phone", b.phone, b.phone?`tel:${b.phone}`:null)}
+      ${field("Address", b.address, null, null, { copy:true })}
+      ${field("Phone", b.phone, b.phone?`tel:${b.phone}`:null, null, { copy:true })}
       ${field("Website", b.website, b.website?normalizeUrl(b.website):null)}
       ${socialHtml}
     </div>

@@ -194,11 +194,24 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
   text-align:center;font-size:calc(1.35rem*var(--fs));
   margin:26px 0 14px;padding-top:18px;border-top:2px solid var(--line);
 }
-/* Social links row in the business detail view */
-.social-row{ display:flex;gap:16px;margin-top:14px; }
-.social-ico{ display:inline-flex;color:var(--brand);transition:transform 160ms var(--ease-out); }
-.social-ico svg{ width:26px;height:26px;display:block;fill:currentColor; }
+/* Social links sit in a normal .field box so they read as one more piece
+   of business info rather than a loose row of icons. */
+.social-row{ display:flex;gap:18px;margin-top:8px; }
+.social-ico{ display:inline-flex;color:var(--accent);transition:transform 160ms var(--ease-out); }
+.social-ico svg{ width:28px;height:28px;display:block;fill:currentColor; }
 .social-ico:active{ transform:scale(.94); }
+
+/* Copy-to-clipboard button on the right of address/phone fields */
+.detail .field.has-copy{ display:flex;align-items:center;gap:10px; }
+.detail .field .fieldmain{ flex:1;min-width:0; }
+.copybtn{
+  flex:0 0 auto;border:none;background:transparent;cursor:pointer;padding:8px;
+  color:var(--muted);display:inline-flex;align-items:center;justify-content:center;
+  transition:transform 160ms var(--ease-out), color 150ms ease;
+}
+.copybtn svg{ width:20px;height:20px;display:block;fill:currentColor; }
+.copybtn:active{ transform:scale(.9); }
+.copybtn.copied{ color:var(--accent); }
 .offer{ background:var(--accent-soft);padding:12px 14px;margin-bottom:10px; }
 .offer .meta{color:var(--muted);font-weight:700;font-size:calc(.74rem*var(--fs));text-transform:uppercase;}
 .offer h3{margin:2px 0 4px;color:var(--ink);font-size:calc(1rem*var(--fs));font-weight:800;}
@@ -218,10 +231,12 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
    stretch one tile taller than its neighbour and break the grid. */
 .dir-grid .card-sq .biz-thumb{ width:100%;aspect-ratio:1/1;object-fit:cover;margin-bottom:10px;display:block; }
 
-/* Reset-notifications button + category filter, stacked above the grid */
-.resetbtn{ width:100%;justify-content:center;margin-bottom:4px; }
-.dir-filter{ margin-top:10px; }
-.dir-filter select{ width:100%; }
+/* Category filter and reset-alerts button share one row. The filter takes
+   the slack because its option labels are long; the button only ever says
+   two words. min-width:0 so the select can actually shrink (see .subtab). */
+.dir-filter{ display:flex;gap:8px;align-items:stretch;margin-top:14px; }
+.dir-filter select{ flex:1;min-width:0; }
+.resetbtn{ flex:0 0 auto;margin-top:0;white-space:nowrap;padding:8px 12px;font-size:calc(.85rem*var(--fs)); }
 /* A reserved-but-unfilled directory slot ("Masjid 3 (to be added)") is real,
    intentional admin content, not an error — but full card weight makes it
    read as a broken listing. Render it as an honestly empty ledger line
@@ -480,7 +495,7 @@ body{ font-weight:400; }
   .navbtn:active,.todaybtn:active,.monthbtn:active,.item.tappable:active,
   .backlink:active,.dir-grid .card-sq:active,.stepper button:active,
   .navitem:active,.onboard-continue:active,.seg button:active,
-  .subtab:active,.social-ico:active{ transform:none; }
+  .subtab:active,.social-ico:active,.copybtn:active{ transform:none; }
   .list.stagger > *{ animation:none; }
   .badge{ animation-name:fade-in; }   /* keep the fade, drop the pop */
 }
