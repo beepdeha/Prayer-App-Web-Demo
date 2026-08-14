@@ -187,7 +187,11 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .detail .field .lbl{ color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:calc(.72rem*var(--fs)); }
 .detail .field .val{ color:var(--ink);font-weight:700;font-size:calc(1.02rem*var(--fs));margin-top:3px;line-height:1.45;word-break:break-word; }
 .detail .field a{color:var(--accent);font-weight:800;text-decoration:none;}
-.detail .section-cap{color:var(--brand-dark);font-weight:800;font-size:calc(1.05rem*var(--fs));margin:18px 0 8px;}
+/* --ink, not --brand-dark: --brand-dark is deliberately fixed at near-black
+   in both themes (it backs the navy bars), so as heading text it turned
+   near-invisible in dark mode. --ink flips with the theme and matches the
+   business name above it. */
+.detail .section-cap{color:var(--ink);font-weight:800;font-size:calc(1.05rem*var(--fs));margin:18px 0 8px;}
 /* Layered on top of .section-cap rather than replacing it — the base class
    is also swept up in two shared font-weight rules further down. Centred
    and larger so it reads as the divider between a business's own details

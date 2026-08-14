@@ -97,7 +97,7 @@ export function toMinutes(t, prayer){
    AM/PM — which half of the day it means comes from which prayer it is —
    so this delegates to toMinutes() rather than re-deciding, keeping the
    displayed time and the scheduling maths from ever disagreeing. */
-export function formatTime(t, prayer, hour12=true){
+export function formatTime(t, prayer, hour12=true, meridiem=true){
   if(!t) return t;
   const total = toMinutes(t, prayer);
   if(total === null) return t;
@@ -105,7 +105,9 @@ export function formatTime(t, prayer, hour12=true){
   if(!hour12) return `${String(Math.floor(total/60)).padStart(2,"0")}:${mm}`;
   const h24 = Math.floor(total / 60);
   const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-  return `${h12}.${mm} ${h24 < 12 ? "AM" : "PM"}`;
+  /* Dropping AM/PM only makes sense in 12-hour mode; 24-hour is already
+     unambiguous, so `meridiem` is ignored above. */
+  return meridiem ? `${h12}.${mm} ${h24 < 12 ? "AM" : "PM"}` : `${h12}.${mm}`;
 }
 
 /* Shared "find the next prayer from now" walk, wrapping to tomorrow's Fajr.

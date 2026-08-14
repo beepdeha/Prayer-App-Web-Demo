@@ -46,10 +46,10 @@ function showMonth(m){
 
   const today=new Date();
   const rows=monthRows(m);
-  const hour12 = getSettings().display.hour12;
+  const { hour12, meridiem } = getSettings().display;
   /* `prayer` is needed because the stored "H.MM" has no AM/PM — which half
      of the day it lands in comes from which prayer it is. */
-  const cell = (v, prayer) => v ? formatTime(v, prayer, hour12) : "—";
+  const cell = (v, prayer) => v ? formatTime(v, prayer, hour12, meridiem) : "—";
   const body = rows.map(r=>{
     const t = r[mode];
     const date=new Date(today.getFullYear(), m-1, r.d);

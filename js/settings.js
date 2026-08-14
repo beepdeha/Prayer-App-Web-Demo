@@ -17,7 +17,8 @@ const DEFAULTS = {
   display: {
     times: "both",           // prayer table: "both" | "begins" | "jamaat"
     countdown: "both",       // countdown:    "both" | "begins" | "jamaat"
-    hour12: true             // true = "7.00 PM", false = "19:00"
+    hour12: true,            // true = "7.00 PM", false = "19:00"
+    meridiem: true           // 12-hour only: false drops the AM/PM suffix
   },
   notify: {
     enabled: false,
@@ -83,8 +84,12 @@ function displayCard(s, { onboarding }){
         <label class="toggle"><input type="checkbox" id="darkToggle" ${s.theme==="dark"?"checked":""}><span class="track"></span><span class="knob"></span></label>
       </div>
       <div class="set-row">
-        <div class="lbl">24-hour time<small>Off shows AM/PM, e.g. 7.00 PM</small></div>
+        <div class="lbl">24-hour time<small>e.g. 19.00 instead of 7.00</small></div>
         <label class="toggle"><input type="checkbox" id="hour24Toggle" ${!s.display.hour12?"checked":""}><span class="track"></span><span class="knob"></span></label>
+      </div>
+      <div class="set-row" id="meridiemRow" ${s.display.hour12?"":"hidden"}>
+        <div class="lbl">Show AM / PM<small>Only applies to 12-hour time</small></div>
+        <label class="toggle"><input type="checkbox" id="meridiemToggle" ${s.display.meridiem?"checked":""}><span class="track"></span><span class="knob"></span></label>
       </div>
       ${onboarding ? "" : `
       <div class="set-row">
@@ -112,7 +117,15 @@ function wireDisplayCard(s){
   $("fontInc").onclick=()=>setFont(s.fontScale+0.1);
   $("fontDec").onclick=()=>setFont(s.fontScale-0.1);
   $("darkToggle").onchange=e=>{ s.theme=e.target.checked?"dark":"light"; apply(); persist(); onChange("theme"); };
-  $("hour24Toggle").onchange=e=>{ s.display.hour12=!e.target.checked; persist(); onChange("display"); };
+  /* AM/PM is meaningless in 24-hour mode, so its row hides rather than
+     sitting there doing nothing. Toggled in place instead of re-rendering
+     the card, which would lose the onboarding-vs-full-screen distinction. */
+  $("hour24Toggle").onchange=e=>{
+    s.display.hour12=!e.target.checked;
+    $("meridiemRow").hidden = !s.display.hour12;
+    persist(); onChange("display");
+  };
+  $("meridiemToggle").onchange=e=>{ s.display.meridiem=e.target.checked; persist(); onChange("display"); };
 }
 
 /* `{ onboarding: true }` renders just the Display card (text size + dark
