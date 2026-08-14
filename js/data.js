@@ -93,6 +93,21 @@ export function toMinutes(t, prayer){
   return hr*60+min;
 }
 
+/* Display a stored "H.MM" for the reader. The stored value carries no
+   AM/PM — which half of the day it means comes from which prayer it is —
+   so this delegates to toMinutes() rather than re-deciding, keeping the
+   displayed time and the scheduling maths from ever disagreeing. */
+export function formatTime(t, prayer, hour12=true){
+  if(!t) return t;
+  const total = toMinutes(t, prayer);
+  if(total === null) return t;
+  const mm = String(total % 60).padStart(2, "0");
+  if(!hour12) return `${String(Math.floor(total/60)).padStart(2,"0")}:${mm}`;
+  const h24 = Math.floor(total / 60);
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${h12}.${mm} ${h24 < 12 ? "AM" : "PM"}`;
+}
+
 /* Shared "find the next prayer from now" walk, wrapping to tomorrow's Fajr.
    `order` is [displayName, prayerKey, TABLE field] and `fajrField` is the
    field to use for tomorrow's Fajr. */

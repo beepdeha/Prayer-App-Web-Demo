@@ -2,7 +2,8 @@
    TIMETABLE VIEW — full month as a data table.
    Toggle between Start times and Jamāʿah times for a cleaner view.
    ============================================================ */
-import { MON, RAW, overrideFor } from "./data.js";
+import { MON, RAW, overrideFor, formatTime } from "./data.js";
+import { getSettings } from "./settings.js";
 
 const $ = id => document.getElementById(id);
 const DAY_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -24,8 +25,7 @@ function monthRows(m){
     return { d,
       begins:{ fajr:sehri, zuhr:zuhrS, asr:asrS, maghrib, isha:ishaS },
       jamaat:{ fajr:ov.fajr||fJ, zuhr:ov.zuhr||zJ, asr:ov.asr||aJ,
-               maghrib:ov.maghrib||maghrib, isha:ov.isha||iJ },
-      custom:ov
+               maghrib:ov.maghrib||maghrib, isha:ov.isha||iJ }
     };
   });
 }
@@ -46,23 +46,24 @@ function showMonth(m){
 
   const today=new Date();
   const rows=monthRows(m);
-  const cell = v => v || "—";
+  const hour12 = getSettings().display.hour12;
+  /* `prayer` is needed because the stored "H.MM" has no AM/PM — which half
+     of the day it lands in comes from which prayer it is. */
+  const cell = (v, prayer) => v ? formatTime(v, prayer, hour12) : "—";
   const body = rows.map(r=>{
     const t = r[mode];
     const date=new Date(today.getFullYear(), m-1, r.d);
     const isToday = date.toDateString()===today.toDateString();
     const isFri = date.getDay()===5;
     const cls=[isToday?"is-today":"", isFri?"is-fri":""].filter(Boolean).join(" ");
-    // mark cells whose Jamaat time was customised in the admin console
-    const cust = p => (mode==="jamaat" && r.custom && r.custom[p]) ? ' class="custom"' : "";
     return `<tr class="${cls}">
       <td class="d">${r.d}</td>
       <td class="dy">${DAY_SHORT[date.getDay()]}</td>
-      <td${cust("fajr")}>${cell(t.fajr)}</td>
-      <td${cust("zuhr")}>${cell(t.zuhr)}</td>
-      <td${cust("asr")}>${cell(t.asr)}</td>
-      <td${cust("maghrib")}>${cell(t.maghrib)}</td>
-      <td${cust("isha")}>${cell(t.isha)}</td>
+      <td>${cell(t.fajr,"fajr")}</td>
+      <td>${cell(t.zuhr,"zuhr")}</td>
+      <td>${cell(t.asr,"asr")}</td>
+      <td>${cell(t.maghrib,"maghrib")}</td>
+      <td>${cell(t.isha,"isha")}</td>
     </tr>`;
   }).join("");
 
@@ -78,6 +79,12 @@ function showMonth(m){
       </table>
     </div>
     <p class="note">Showing <b>${mode==="begins"?"start":"Jamaat"} times</b>. Today is highlighted · Fridays are shaded.</p>`;
+}
+
+/* Repaint the open month after a settings change (e.g. 12h/24h). No-op if
+   the timetable has never been built, so it is safe to call unconditionally. */
+export function refreshTimetable(){
+  if($("monthTable")?.hidden === false) showMonth(activeMonth);
 }
 
 export function initTimetable(){

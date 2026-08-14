@@ -12,7 +12,7 @@ import { reschedule } from "./notifications.js";
 import { syncSubscriptions } from "./push.js";
 import { initLinks } from "./links.js";
 import { initPrayers, refreshPrayers } from "./prayers.js";
-import { initTimetable } from "./timetable.js";
+import { initTimetable, refreshTimetable } from "./timetable.js";
 import { initEvents, getEvents, primeEvents } from "./events.js";
 import { initAnnouncements, getAnnouncements, primeAnnouncements } from "./announcements.js";
 import { initDirectory, getDirectoryUnread, primeDirectory } from "./directory.js";
@@ -196,7 +196,7 @@ async function main(){
   await initSettings(kind=>{
     if(kind==="notify") reschedule(getSettings());
     if(kind==="announce") syncSubscriptions(getSettings());
-    if(kind==="theme"||kind==="font"||kind==="display") refreshPrayers();
+    if(kind==="theme"||kind==="font"||kind==="display"){ refreshPrayers(); refreshTimetable(); }
   });
   wireNav();
   wireResumeRefresh();

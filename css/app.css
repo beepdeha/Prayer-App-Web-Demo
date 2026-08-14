@@ -136,9 +136,11 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .mt-table tr.is-fri td.d,.mt-table tr.is-fri td.dy{font-weight:800;}
 .mt-table tr.is-today td{background:var(--highlight);}
 .mt-table tr.is-today td.d{color:var(--accent);}
-/* Jamaat time customised from the admin console */
-.mt-table td.custom{color:var(--accent);font-weight:800;position:relative;}
-.mt-table td.custom::after{content:"•";position:absolute;top:2px;right:4px;font-size:.7em;line-height:1;}
+/* An admin-customised Jamaat time is deliberately NOT marked here. To a
+   congregant the masjid's time simply is the time; flagging it as edited
+   invites doubt about which one to trust. The admin console highlights
+   its own overridden cells instead, so the masjid can see where they
+   differ from the Council of Mosque times. */
 
 /* ---------- Sub-tabs ---------- */
 .subtabs{ display:flex;margin-top:16px;border:2px solid var(--brand);overflow:hidden; }
@@ -212,7 +214,11 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .copybtn svg{ width:20px;height:20px;display:block;fill:currentColor; }
 .copybtn:active{ transform:scale(.9); }
 .copybtn.copied{ color:var(--accent); }
-.offer{ background:var(--accent-soft);padding:12px 14px;margin-bottom:10px; }
+/* Card surface + Card-resting shadow, same as .item/.card. It used to use
+   --accent-soft with no shadow, which in dark mode is nearly the same
+   lightness as the page behind it — the card dissolved into the background
+   and took its (individually legible) text with it. */
+.offer{ background:var(--card);box-shadow:0 8px 22px rgba(10,18,71,.10);padding:12px 14px;margin-bottom:10px; }
 .offer .meta{color:var(--muted);font-weight:700;font-size:calc(.74rem*var(--fs));text-transform:uppercase;}
 .offer h3{margin:2px 0 4px;color:var(--ink);font-size:calc(1rem*var(--fs));font-weight:800;}
 .offer img{width:100%;height:auto;display:block;margin:8px 0;}
@@ -229,7 +235,10 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .dir-grid .card-sq .meta{margin-top:6px;color:var(--muted);font-weight:700;font-size:calc(.78rem*var(--fs));}
 /* Business logo. Cropped square so a portrait or landscape upload can't
    stretch one tile taller than its neighbour and break the grid. */
-.dir-grid .card-sq .biz-thumb{ width:100%;aspect-ratio:1/1;object-fit:cover;margin-bottom:10px;display:block; }
+/* 4:3 rather than square: most business logos are horizontal wordmarks,
+   which a square crop cuts the ends off. Wide enough to suit a photo too,
+   without the image swallowing the 2-up tile. */
+.dir-grid .card-sq .biz-thumb{ width:100%;aspect-ratio:4/3;object-fit:cover;margin-bottom:10px;display:block; }
 
 /* Category filter and reset-alerts button share one row. The filter takes
    the slack because its option labels are long; the button only ever says

@@ -27,6 +27,7 @@ export const CATEGORIES = {
     "Homeware / gift shop",
     "Specialist hobby shop",
     "Islamic Shop",
+    "Grocery / convenience store",
   ],
   "Trades and Home Services": [
     "Electrician",
@@ -54,6 +55,7 @@ export const CATEGORIES = {
     "Freelance admin",
     "Data analytics",
     "Graphic design / Printing",
+    "Travel agent",
   ],
   "Creative and Digital": [
     "Photography / Videography",

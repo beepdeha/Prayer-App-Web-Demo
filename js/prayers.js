@@ -3,7 +3,7 @@
    and pull-to-refresh.
    ============================================================ */
 import { DOW, MON, dayTimes, nextBegins, nextJamaat,
-         currentPrayer, defaultViewDate } from "./data.js";
+         currentPrayer, defaultViewDate, formatTime } from "./data.js";
 import { getSettings } from "./settings.js";
 
 let view = defaultViewDate();       // the date currently shown
@@ -22,8 +22,10 @@ function renderCurrent(){
   const box = $("current");
   if(!cur){ box.hidden = true; return; }
   box.hidden = false;
+  const hour12 = getSettings().display.hour12;
   const times = cur.note ? cur.note
-    : [cur.begins, cur.jamaat].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(" · ");
+    : [cur.begins, cur.jamaat].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i)
+        .map(v=>formatTime(v, cur.key, hour12)).join(" · ");
   $("curText").textContent = `Now: ${cur.name}${times ? " - " + times : ""}`;
 }
 
@@ -77,10 +79,11 @@ function render(){
   }
 
   const dash = '<span class="dash">—</span>';
+  const hour12 = getSettings().display.hour12;
   rows.innerHTML = list.map((p,i)=>{
     const cls = "row" + (single?" single":"") + (p[4]==="sunrise"?" sunrise":"") + (i===nextIdx?" next":"");
-    const begins = p[2] || dash;
-    const jam = p[4]==="sunrise" ? dash : (p[3] || dash);
+    const begins = p[2] ? formatTime(p[2], p[4], hour12) : dash;
+    const jam = p[4]==="sunrise" ? dash : (p[3] ? formatTime(p[3], p[4], hour12) : dash);
     const cells = mode==="both" ? `<div class="begins">${begins}</div><div class="jamaat">${jam}</div>`
                 : mode==="jamaat" ? `<div class="jamaat">${jam}</div>`
                 : `<div class="begins">${begins}</div>`;

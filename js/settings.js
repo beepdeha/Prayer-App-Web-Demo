@@ -16,7 +16,8 @@ const DEFAULTS = {
   theme: "light",            // "light" | "dark"
   display: {
     times: "both",           // prayer table: "both" | "begins" | "jamaat"
-    countdown: "both"        // countdown:    "both" | "begins" | "jamaat"
+    countdown: "both",       // countdown:    "both" | "begins" | "jamaat"
+    hour12: true             // true = "7.00 PM", false = "19:00"
   },
   notify: {
     enabled: false,
@@ -81,6 +82,10 @@ function displayCard(s, { onboarding }){
         <div class="lbl">Dark mode</div>
         <label class="toggle"><input type="checkbox" id="darkToggle" ${s.theme==="dark"?"checked":""}><span class="track"></span><span class="knob"></span></label>
       </div>
+      <div class="set-row">
+        <div class="lbl">24-hour time<small>Off shows AM/PM, e.g. 7.00 PM</small></div>
+        <label class="toggle"><input type="checkbox" id="hour24Toggle" ${!s.display.hour12?"checked":""}><span class="track"></span><span class="knob"></span></label>
+      </div>
       ${onboarding ? "" : `
       <div class="set-row">
         <div class="lbl">Prayer times shown<small>Which times to show on the Prayers page</small></div>
@@ -107,6 +112,7 @@ function wireDisplayCard(s){
   $("fontInc").onclick=()=>setFont(s.fontScale+0.1);
   $("fontDec").onclick=()=>setFont(s.fontScale-0.1);
   $("darkToggle").onchange=e=>{ s.theme=e.target.checked?"dark":"light"; apply(); persist(); onChange("theme"); };
+  $("hour24Toggle").onchange=e=>{ s.display.hour12=!e.target.checked; persist(); onChange("display"); };
 }
 
 /* `{ onboarding: true }` renders just the Display card (text size + dark
