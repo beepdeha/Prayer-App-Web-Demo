@@ -16,12 +16,35 @@ function plugin(){
 }
 export function pushAvailable(){ return !!plugin(); }
 
+/* Android 8+ drops any notification posted to a channel that does not exist,
+   silently — no error, nothing in the tray. The Cloud Functions send
+   channelId:"default" (see pushToTopic in functions/index.js), and
+   @capacitor/local-notifications owns a channel by that id but only creates
+   it when a local notification is first scheduled. So a user who enables
+   announcements but never prayer reminders would have no channel, and every
+   push would vanish. Create it up front instead. Idempotent — Android
+   ignores a repeat create for the same id. */
+async function ensureChannel(){
+  const LN = window.Capacitor?.Plugins?.LocalNotifications;
+  if(!LN?.createChannel) return;
+  try{
+    await LN.createChannel({
+      id: "default",
+      name: "Masjid notifications",
+      description: "Announcements, events and prayer time reminders",
+      importance: 4,          // HIGH — heads-up, matching the priority the functions send
+      visibility: 1           // PUBLIC — safe on a lock screen; nothing here is private
+    });
+  }catch(e){ console.warn("notification channel setup failed", e); }
+}
+
 async function ensurePermission(){
   const M=plugin(); if(!M) return false;
   try{
     let r = await M.checkPermissions();
     if(r.receive!=="granted") r = await M.requestPermissions();
     if(r.receive!=="granted") return false;
+    await ensureChannel();
     await M.getToken();          // registers the device with FCM
     return true;
   }catch(e){ console.warn("push permission failed", e); return false; }

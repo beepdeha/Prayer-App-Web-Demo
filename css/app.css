@@ -4,6 +4,13 @@
    ============================================================ */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;}
+/* No rubber-band overscroll. On iOS the whole page bouncing past its own
+   background is the clearest tell that an app is a wrapped website, and
+   Apple reads that as a website (guideline 4.2). It also stops the browser's
+   own pull-to-refresh fighting ours on Android and the web mirror — js/ptr.js
+   drives itself from touchmove deltas, not from native overscroll, so it is
+   unaffected by this. */
+html,body{overscroll-behavior-y:none;}
 body{
   background-color:var(--bg);            /* solid fallback under the layers */
   background-image:

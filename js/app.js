@@ -117,6 +117,17 @@ function show(name){
 /* ---- About: back link + easter egg (5 taps on Credits) ---- */
 function wireAbout(){
   $("aboutBack").onclick=()=>show("settings");
+  /* The policy is a real page rather than another view, because Google Play
+     needs the same document at a public URL. Carry the current theme and text
+     size across in the query string: on a device those live in Capacitor
+     Preferences, which a plain page cannot read, so without this a dark-mode
+     user would tap through to a white flash. */
+  $("privacyLink").onclick=(e)=>{
+    e.preventDefault();
+    const theme = document.documentElement.getAttribute("data-theme") || "light";
+    const fs = getComputedStyle(document.documentElement).getPropertyValue("--fs").trim() || "1";
+    location.href = `privacy.html?theme=${encodeURIComponent(theme)}&fs=${encodeURIComponent(fs)}`;
+  };
   let clicks=0, timer=null;
   $("creditsBox").onclick=()=>{
     clicks++;
