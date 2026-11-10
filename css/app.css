@@ -34,42 +34,42 @@ body{
 [hidden]{display:none !important;}
 
 /* ---------- Header ---------- */
-/* --head-top keeps a gap under the phone's status bar. The name and the
-   masjid's logo sit side by side as one centred group, vertically centred on
-   each other. --logo-w is shared with the name's size cap below, so at any
-   width or text size the pair can never overflow the row. */
+/* --head-top keeps a gap under the phone's status bar. The logo tile hangs from
+   the header's bottom edge, so min-height (gap + tile + its 4px offset) stops a
+   short header pushing the tile up under the clock and battery. */
 header{
   --head-top:max(20px, calc(env(safe-area-inset-top) + 8px));
-  --logo-w:min(44vw, 180px);
-  --name-room:calc(min(100vw, 560px) - 32px - var(--logo-w) - 12px);
-  display:flex;align-items:center;justify-content:center;gap:12px;
-  padding:var(--head-top) 0 4px;
+  position:relative;text-align:center;padding:var(--head-top) 66px 4px;
+  min-height:calc(var(--head-top) + 88px);
 }
-/* The masjid's horizontal logo (dome | MADINA ISLAMIC CENTRE ROTHERHAM).
-   Rounded on purpose: it is the logo's own tile, not a component, so the
-   square-corner rule does not apply. */
+/* The masjid's logo, top right. Rounded on purpose: it is the logo's own tile,
+   not a component, so the square-corner rule does not apply. The header's
+   side padding matches the tile so the centred name can never run under it.
+   Portrait, because Madinah's logo carries the masjid's name under the dome
+   and the name is part of its identity, small as it is here. */
 .brand-tile{
-  flex:0 0 auto;width:var(--logo-w);padding:6px 8px;
-  background:#fff;border-radius:10px;box-shadow:0 4px 14px rgba(var(--shadow-rgb),.14);
+  position:absolute;right:0;bottom:4px;width:58px;height:84px;padding:4px 3px;
+  background:#fff;border-radius:12px;box-shadow:0 4px 14px rgba(var(--shadow-rgb),.14);
+  display:flex;align-items:center;justify-content:center;
 }
-.brand-tile img{width:100%;height:auto;display:block;}
+.brand-tile img{width:100%;height:100%;object-fit:contain;display:block;}
 .mosque{
   font-size:calc(1.18rem*var(--fs));letter-spacing:.10em;text-transform:uppercase;
-  font-weight:800;color:var(--ink);margin:0;line-height:1.15;min-width:0;text-align:center;
+  font-weight:800;color:var(--ink);margin:0;line-height:1.15;
 }
 .mosque .mosque-name{
   font-family:'Bebas Neue','Arial Narrow',sans-serif;font-weight:400;font-synthesis:none;
   letter-spacing:.04em;line-height:1;white-space:nowrap;display:block;
   /* Always one line: follows the text-size setting, but is capped at the
-     room left beside the logo (MADINAH is ~3.3em wide in this face). */
-  font-size:min(calc(2.3rem*var(--fs)), calc(var(--name-room) / 3.6));
+     width left beside the logo tile (MADINAH is ~3.3em wide in this face). */
+  font-size:min(calc(2.3rem*var(--fs)), calc((min(100vw, 560px) - 170px) / 3.6));
 }
 /* "ISLAMIC CENTRE" sits under the name in the same condensed capitals,
    as it does in the logo, only smaller and in the brand colour. */
 .mosque .mosque-sub{
   display:block;font-family:'Bebas Neue','Arial Narrow',sans-serif;font-weight:400;
   letter-spacing:.09em;line-height:1;white-space:nowrap;color:var(--brand);margin-top:2px;
-  font-size:min(calc(1.05rem*var(--fs)), calc(var(--name-room) / 7.2));
+  font-size:min(calc(1.05rem*var(--fs)), calc((min(100vw, 560px) - 170px) / 7.2));
 }
 .title{ font-size:calc(1.7rem*var(--fs));font-weight:800;margin:10px 0 0;line-height:1.1;color:var(--ink);text-align:center; }
 .subtitle{ color:var(--muted);text-align:center;font-weight:700;margin:6px 0 0;font-size:calc(.9rem*var(--fs)); }
