@@ -1,8 +1,12 @@
 /* ============================================================
-   COMPONENTS — navy / gold theme. Colours from theme.css.
+   COMPONENTS — brand / gold theme. Colours from theme.css.
    The girih pattern tiles behind a soft radial wash.
    ============================================================ */
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+/* touch-action:manipulation is what stops double-tap enlarging the page, on
+   iOS and Android alike; the viewport meta in index.html stops pinch. Leaflet's
+   own rules are more specific, so the map keeps its pinch zoom. */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 html,body{margin:0;padding:0;}
 /* No rubber-band overscroll. On iOS the whole page bouncing past its own
    background is the clearest tell that an app is a wrapped website, and
@@ -30,14 +34,40 @@ body{
 [hidden]{display:none !important;}
 
 /* ---------- Header ---------- */
-header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
+/* --head-top keeps a gap under the phone's status bar. The logo tile hangs from
+   the header's bottom edge, so min-height (gap + tile + its 4px offset) stops a
+   short header pushing the tile up under the clock and battery. */
+header{
+  --head-top:max(20px, calc(env(safe-area-inset-top) + 8px));
+  position:relative;text-align:center;padding:var(--head-top) 66px 4px;
+  min-height:calc(var(--head-top) + 62px);
+}
+/* The masjid's logo, top right. Rounded on purpose: it is the logo's own tile,
+   not a component, so the square-corner rule does not apply. The header's
+   side padding matches the tile so the centred name can never run under it. */
+.brand-tile{
+  position:absolute;right:0;bottom:4px;width:58px;height:58px;padding:3px;
+  background:#fff;border-radius:12px;box-shadow:0 4px 14px rgba(var(--shadow-rgb),.14);
+  display:flex;align-items:center;justify-content:center;
+}
+.brand-tile img{width:100%;height:auto;display:block;}
 .mosque{
   font-size:calc(1.18rem*var(--fs));letter-spacing:.10em;text-transform:uppercase;
   font-weight:800;color:var(--ink);margin:0;line-height:1.15;
 }
+.mosque .mosque-name{
+  font-family:'Bebas Neue','Arial Narrow',sans-serif;font-weight:400;font-synthesis:none;
+  letter-spacing:.04em;line-height:1;white-space:nowrap;display:block;
+  /* Always one line: follows the text-size setting, but is capped at the
+     width left beside the logo tile (MADINAH is ~3.3em wide in this face). */
+  font-size:min(calc(2.3rem*var(--fs)), calc((min(100vw, 560px) - 170px) / 3.6));
+}
+/* "ISLAMIC CENTRE" sits under the name in the same condensed capitals,
+   as it does in the logo, only smaller and in the brand colour. */
 .mosque .mosque-sub{
-  display:block;font-size:calc(.72rem*var(--fs));letter-spacing:.16em;
-  font-weight:600;color:var(--accent);margin-top:3px;
+  display:block;font-family:'Bebas Neue','Arial Narrow',sans-serif;font-weight:400;
+  letter-spacing:.09em;line-height:1;white-space:nowrap;color:var(--brand);margin-top:2px;
+  font-size:min(calc(1.05rem*var(--fs)), calc((min(100vw, 560px) - 170px) / 7.2));
 }
 .title{ font-size:calc(1.7rem*var(--fs));font-weight:800;margin:10px 0 0;line-height:1.1;color:var(--ink);text-align:center; }
 .subtitle{ color:var(--muted);text-align:center;font-weight:700;margin:6px 0 0;font-size:calc(.9rem*var(--fs)); }
@@ -46,7 +76,7 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .datebar{ display:flex;align-items:stretch;gap:10px;margin-top:18px; }
 .datebar .day{
   flex:1;background:var(--card);padding:14px 12px;text-align:center;
-  box-shadow:0 8px 24px rgba(10,18,71,.10);display:flex;flex-direction:column;justify-content:center;
+  box-shadow:0 8px 24px rgba(var(--shadow-rgb),.10);display:flex;flex-direction:column;justify-content:center;
 }
 .day .dow{ font-size:calc(1.6rem*var(--fs));font-weight:800;color:var(--brand);line-height:1.1; }
 .day .date{ font-size:calc(1.25rem*var(--fs));font-weight:800;margin-top:3px;color:var(--ink); }
@@ -69,7 +99,7 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .countdown{
   margin-top:12px;background:var(--card);border:2px solid var(--brand);
   padding:12px 16px;display:flex;align-items:center;justify-content:center;gap:10px;
-  flex-wrap:wrap;color:var(--ink);text-align:center;box-shadow:0 8px 24px rgba(10,18,71,.08);
+  flex-wrap:wrap;color:var(--ink);text-align:center;box-shadow:0 8px 24px rgba(var(--shadow-rgb),.08);
 }
 .cd-label{font-size:calc(1.02rem*var(--fs));font-weight:800;}
 .cd-time{font-size:calc(1.5rem*var(--fs));font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;}
@@ -94,7 +124,7 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 }
 
 /* ---------- Card / prayer table ---------- */
-.card{ background:var(--card);margin-top:18px;overflow:hidden;box-shadow:0 10px 30px rgba(10,18,71,.12); }
+.card{ background:var(--card);margin-top:18px;overflow:hidden;box-shadow:0 10px 30px rgba(var(--shadow-rgb),.12); }
 .tablehead{
   display:grid;grid-template-columns:1.3fr 1fr 1fr;background:var(--brand-dark);color:var(--on-navy);
   font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:calc(.82rem*var(--fs));
@@ -111,6 +141,8 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .row .begins,.row .jamaat{ text-align:right;padding:16px 14px;font-size:calc(1.4rem*var(--fs));font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink); }
 .row .jamaat{color:var(--accent);}
 .row .dash{color:var(--muted);opacity:.6;font-weight:700;}
+/* Friday's eyebrow over Zuhr */
+.row .jummah{ display:block;font-size:calc(.68rem*var(--fs));font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px; }
 .row.sunrise{background:var(--accent-soft);}
 .row.sunrise .name{font-size:calc(1.05rem*var(--fs));color:var(--accent);}
 .row.sunrise .begins{font-size:calc(1.2rem*var(--fs));color:var(--accent);}
@@ -128,7 +160,7 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .monthgrid{ display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px; }
 .monthbtn{
   border:none;cursor:pointer;background:var(--card);color:var(--ink);font-weight:800;
-  font-size:calc(.96rem*var(--fs));padding:15px 4px;box-shadow:0 6px 18px rgba(10,18,71,.10);
+  font-size:calc(.96rem*var(--fs));padding:15px 4px;box-shadow:0 6px 18px rgba(var(--shadow-rgb),.10);
 }
 .monthbtn.active{background:var(--brand);color:var(--on-brand);}
 .monthbtn:active{transform:scale(.97);}
@@ -138,11 +170,18 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .mt-table td{ padding:10px 6px;text-align:center;border-top:1px solid var(--line);font-size:calc(.94rem*var(--fs));color:var(--ink);font-weight:700; }
 .mt-table td.d{font-weight:800;color:var(--brand);}
 .mt-table td.dy{color:var(--muted);font-size:calc(.86rem*var(--fs));}
-/* Friday shading first so today's highlight wins when they coincide */
+/* Friday shading first so today's highlight wins when they coincide, and
+   the tapped row last so it always reads as "the one I picked". The edge
+   bar on the first cell carries Friday on its own, without the tint. */
+.mt-table tbody tr{cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .mt-table tr.is-fri td{background:var(--friday);}
-.mt-table tr.is-fri td.d,.mt-table tr.is-fri td.dy{font-weight:800;}
+.mt-table tr.is-fri td:first-child{box-shadow:inset 4px 0 0 var(--friday-edge);}
+.mt-table tr.is-fri td.d,.mt-table tr.is-fri td.dy{font-weight:800;color:var(--friday-ink);}
 .mt-table tr.is-today td{background:var(--highlight);}
 .mt-table tr.is-today td.d{color:var(--accent);}
+.mt-table tr.is-today td:first-child{box-shadow:inset 4px 0 0 var(--highlight-edge);}
+.mt-table tr.is-sel td{background:var(--selected);color:var(--on-selected);}
+.mt-table tr.is-sel td.d,.mt-table tr.is-sel td.dy{color:var(--on-selected);}
 /* An admin-customised Jamaat time is deliberately NOT marked here. To a
    congregant the masjid's time simply is the time; flagging it as edited
    invites doubt about which one to trust. The admin console highlights
@@ -165,7 +204,7 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 
 /* ---------- Lists & items ---------- */
 .list{margin-top:18px;display:flex;flex-direction:column;gap:12px;}
-.item{ background:var(--card);box-shadow:0 8px 22px rgba(10,18,71,.10);padding:16px; }
+.item{ background:var(--card);box-shadow:0 8px 22px rgba(var(--shadow-rgb),.10);padding:16px; }
 .item.tappable{cursor:pointer;}
 .item.tappable:active{transform:scale(.98);}
 .item h2{ margin:0 0 4px;font-size:calc(1.12rem*var(--fs));color:var(--ink);font-weight:800; }
@@ -174,6 +213,8 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .item img{ width:100%;height:auto;margin-top:10px;display:block; }
 .item .chev{float:right;color:var(--brand);font-weight:800;font-size:1.3rem;line-height:1;}
 .intro{ background:var(--accent-soft);padding:14px 16px;margin-top:18px;color:var(--ink);line-height:1.5;font-size:calc(.92rem*var(--fs));text-align:center; }
+.intro-signup{ margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--line);font-weight:700; }
+.intro-signup a{ color:var(--link);text-decoration:underline;text-underline-offset:2px; }
 
 .empty{ color:var(--muted);text-align:center;margin:28px 8px;line-height:1.6;font-size:calc(.95rem*var(--fs)); }
 
@@ -182,7 +223,7 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 .backlink:active{transform:scale(.97);}
 
 /* ---------- Event cards (styled like announcement boxes) ---------- */
-.event{ background:var(--card);box-shadow:0 8px 22px rgba(10,18,71,.10);padding:16px; }
+.event{ background:var(--card);box-shadow:0 8px 22px rgba(var(--shadow-rgb),.10);padding:16px; }
 .event h2{margin:2px 0 6px;color:var(--ink);font-size:calc(1.16rem*var(--fs));font-weight:800;}
 .event .when{color:var(--accent);font-weight:800;font-size:calc(.96rem*var(--fs));}
 .event .where{color:var(--muted);font-weight:700;font-size:calc(.88rem*var(--fs));margin-top:2px;}
@@ -190,10 +231,16 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 
 /* ---------- Detail (masjid / business) ---------- */
 .detail{margin-top:16px;}
-.detail .field{ background:var(--card);box-shadow:0 6px 18px rgba(10,18,71,.08);padding:14px 16px;margin-bottom:10px; }
+.detail .field{ background:var(--card);box-shadow:0 6px 18px rgba(var(--shadow-rgb),.08);padding:14px 16px;margin-bottom:10px; }
 .detail .field .lbl{ color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:calc(.72rem*var(--fs)); }
 .detail .field .val{ color:var(--ink);font-weight:700;font-size:calc(1.02rem*var(--fs));margin-top:3px;line-height:1.45;word-break:break-word; }
 .detail .field a{color:var(--accent);font-weight:800;text-decoration:none;}
+/* Prose links inside body copy. Every other anchor in the app is already
+   themed (directory fields, social icons, back links); these two sit in plain
+   .item text and were falling through to the browser's default blue, which is
+   unreadable against the dark theme. Targeted by id rather than `.item a` so
+   this can't reach the themed anchors above. */
+#privacyLink, #contactEmail{ color:var(--link);font-weight:700;text-decoration:underline; }
 /* --ink, not --brand-dark: --brand-dark is deliberately fixed at near-black
    in both themes (it backs the navy bars), so as heading text it turned
    near-invisible in dark mode. --ink flips with the theme and matches the
@@ -229,7 +276,7 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
    --accent-soft with no shadow, which in dark mode is nearly the same
    lightness as the page behind it — the card dissolved into the background
    and took its (individually legible) text with it. */
-.offer{ background:var(--card);box-shadow:0 8px 22px rgba(10,18,71,.10);padding:12px 14px;margin-bottom:10px; }
+.offer{ background:var(--card);box-shadow:0 8px 22px rgba(var(--shadow-rgb),.10);padding:12px 14px;margin-bottom:10px; }
 .offer .meta{color:var(--muted);font-weight:700;font-size:calc(.74rem*var(--fs));text-transform:uppercase;}
 .offer h3{margin:2px 0 4px;color:var(--ink);font-size:calc(1rem*var(--fs));font-weight:800;}
 .offer img{width:100%;height:auto;display:block;margin:8px 0;}
@@ -238,7 +285,7 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 /* ---------- Directory grid (square masjid cards, 2-up) ---------- */
 .dir-grid{ display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px; }
 .dir-grid .card-sq{
-  background:var(--card);box-shadow:0 8px 22px rgba(10,18,71,.10);
+  background:var(--card);box-shadow:0 8px 22px rgba(var(--shadow-rgb),.10);
   padding:14px 12px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
 }
 .dir-grid .card-sq:active{transform:scale(.98);}
@@ -290,7 +337,7 @@ header{ text-align:center; padding:max(20px,env(safe-area-inset-top)) 0 4px; }
 
 /* ---------- Settings ---------- */
 .settings{margin-top:18px;display:flex;flex-direction:column;gap:14px;}
-.set-card{ background:var(--card);box-shadow:0 8px 22px rgba(10,18,71,.10);padding:16px; }
+.set-card{ background:var(--card);box-shadow:0 8px 22px rgba(var(--shadow-rgb),.10);padding:16px; }
 .set-card h2{margin:0 0 12px;color:var(--ink);font-size:calc(1.05rem*var(--fs));font-weight:800;}
 .set-row{ display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line); }
 .set-row:first-of-type{border-top:none;}
@@ -306,10 +353,12 @@ select.sel{ padding:9px 10px;border:2px solid var(--line);background:var(--card)
 /* iOS-style toggle — deliberately rounded (with the pull-to-refresh spinner
    below), the two intentional exceptions to the Square Corner Rule. */
 .toggle{position:relative;width:52px;height:30px;flex:0 0 auto;}
-.toggle input{opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
+/* appearance:none, not opacity:0 — a TV remote's D-pad navigation skips
+   fully transparent elements, which made every switch unreachable. */
+.toggle input{-webkit-appearance:none;appearance:none;background:none;border:0;display:block;width:100%;height:100%;margin:0;cursor:pointer;}
 .toggle .track{ position:absolute;inset:0;background:var(--line);border-radius:30px;transition:background 150ms ease;pointer-events:none; }
 /* shadow tinted from --brand navy, not black, per the Navy Shadow Rule */
-.toggle .knob{ position:absolute;top:3px;left:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:transform 150ms var(--ease-out);box-shadow:0 2px 4px rgba(10,18,71,.25);pointer-events:none; }
+.toggle .knob{ position:absolute;top:3px;left:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:transform 150ms var(--ease-out);box-shadow:0 2px 4px rgba(var(--shadow-rgb),.25);pointer-events:none; }
 .toggle input:checked + .track{background:var(--brand);}
 .toggle input:checked + .track + .knob{transform:translateX(22px);}
 
@@ -328,7 +377,7 @@ select.sel{ padding:9px 10px;border:2px solid var(--line);background:var(--card)
   position:fixed;left:0;right:0;bottom:0;z-index:30;
   display:flex;background:var(--nav-bg);
   padding-bottom:env(safe-area-inset-bottom);
-  box-shadow:0 -4px 20px rgba(10,18,71,.30);
+  box-shadow:0 -4px 20px rgba(var(--shadow-rgb),.30);
 }
 /* The bar has a fixed width and six items, so its type deliberately does
    NOT scale with --fs — otherwise large text sizes overflow the bar. */
@@ -363,7 +412,7 @@ select.sel{ padding:9px 10px;border:2px solid var(--line);background:var(--card)
   background:var(--danger);color:var(--on-danger);
   font-size:.62rem;font-weight:700;line-height:16px;text-align:center;
   font-variant-numeric:tabular-nums;
-  box-shadow:0 2px 4px rgba(10,18,71,.25);
+  box-shadow:0 2px 4px rgba(var(--shadow-rgb),.25);
   pointer-events:none;
 }
 /* Sub-tabs and directory tiles are padded boxes, so their badge tucks
@@ -525,3 +574,38 @@ body{ font-weight:400; }
 @media (hover: hover) and (pointer: fine){
   .navbtn:hover{ filter:brightness(1.06); }
 }
+
+/* ---- Focus ----
+   Only shows for keyboard / TV-remote focus, never on a tap. On an Android
+   TV box the D-pad is the only way around the app, so the ring has to be
+   unmissable from across a room. */
+:focus-visible{ outline:3px solid var(--accent-bright); outline-offset:2px; }
+tr:focus-visible{ outline-offset:-3px; }
+
+/* ---- Large text on narrow phones ----
+   --fs scales type, but the screen stays the same width. These min() caps only
+   bite when the text would no longer fit (they sit above the 100% size at
+   every phone width), so the largest Text size setting grows as far as the
+   screen allows and then stops instead of clipping the Jamaat column. */
+body{ overflow-wrap:break-word; }
+.title{ font-size:min(calc(1.7rem*var(--fs)), 10.8vw); }
+.tablehead,.row{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+.tablehead.single,.row.single{ grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); }
+.tablehead{ font-size:min(calc(.82rem*var(--fs)), 3.5vw); letter-spacing:.05em; }
+.tablehead div{ padding:14px min(14px, 2.6vw); }
+.row .name{ padding:16px min(14px, 2.6vw); font-size:min(calc(1.25rem*var(--fs)), 6vw); }
+.row .sub{ font-size:min(calc(.72rem*var(--fs)), 3.4vw); }
+/* The vw term is 5vw at 100% text, where "11.53 AM" just fits on one line,
+   and rises to 7.4vw at 160%, where the AM/PM is allowed to wrap below it. */
+.row .begins,.row .jamaat{
+  padding:16px min(14px, 2.6vw);
+  font-size:min(calc(1.4rem*var(--fs)), calc(5vw + (var(--fs) - 1)*4vw));
+}
+.row.sunrise .name{ font-size:min(calc(1.05rem*var(--fs)), 6vw); }
+.row.sunrise .begins{ font-size:min(calc(1.2rem*var(--fs)), calc(5vw + (var(--fs) - 1)*3vw)); }
+.countdown.split .cd-label{ font-size:min(calc(.82rem*var(--fs)), 3.9vw); }
+.countdown.split .cd-time{ font-size:min(calc(1.28rem*var(--fs)), 6.4vw); }
+.short-times .row .begins,.short-times .row .jamaat{ font-size:min(calc(1.4rem*var(--fs)), 7.4vw); }
+.short-times .row.sunrise .begins{ font-size:min(calc(1.2rem*var(--fs)), 7vw); }
+select.sel{ max-width:100%; min-width:0; }
+.set-row{ flex-wrap:wrap; }

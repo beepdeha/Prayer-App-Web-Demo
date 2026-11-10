@@ -59,7 +59,7 @@ function render(){
 
   if(!t){ rows.innerHTML='<div class="row"><div class="name">No data for this date</div><div></div></div>'; return; }
 
-  let list=[
+  const list=[
     ["Fajr","Dawn", t.sehri, t.fajrJ, "fajr"],
     ["Sunrise","Fajr ends", t.sunrise, "", "sunrise"],
     ["Zuhr","Midday", t.zuhrS, t.zuhrJ, "zuhr"],
@@ -67,8 +67,7 @@ function render(){
     ["Maghrib","Sunset", t.maghrib, t.maghrib, "maghrib"],
     ["Isha","Night", t.ishaS, t.ishaJ, "isha"]
   ];
-  // Sunrise has no Jamaat, so drop it when only Jamaat times are shown
-  if(mode==="jamaat") list=list.filter(p=>p[4]!=="sunrise");
+  const friday = view.getDay()===5;
 
   // highlight the upcoming prayer while on the default day (today, or
   // tomorrow once Isha has started — where the next prayer is its Fajr)
@@ -80,15 +79,20 @@ function render(){
 
   const dash = '<span class="dash">—</span>';
   const { hour12, meridiem } = getSettings().display;
+  // Without AM/PM a time is short, so app.css can keep it at full size.
+  document.documentElement.classList.toggle("short-times", !hour12 || !meridiem);
   rows.innerHTML = list.map((p,i)=>{
     const cls = "row" + (single?" single":"") + (p[4]==="sunrise"?" sunrise":"") + (i===nextIdx?" next":"");
     const begins = p[2] ? formatTime(p[2], p[4], hour12, meridiem) : dash;
     const jam = p[4]==="sunrise" ? dash : (p[3] ? formatTime(p[3], p[4], hour12, meridiem) : dash);
+    /* Sunrise has no Jamaat, but it still matters (it ends Fajr), so the
+       Jamaat-only table shows its time in the single column. */
     const cells = mode==="both" ? `<div class="begins">${begins}</div><div class="jamaat">${jam}</div>`
-                : mode==="jamaat" ? `<div class="jamaat">${jam}</div>`
+                : mode==="jamaat" ? (p[4]==="sunrise" ? `<div class="begins">${begins}</div>` : `<div class="jamaat">${jam}</div>`)
                 : `<div class="begins">${begins}</div>`;
+    const jummah = friday && p[4]==="zuhr" ? `<span class="jummah">Jummah</span>` : "";
     return `<div class="${cls}">
-      <div class="name">${p[0]}<span class="sub">${p[1]}</span></div>
+      <div class="name">${jummah}${p[0]}<span class="sub">${p[1]}</span></div>
       ${cells}
     </div>`;
   }).join("");
@@ -104,11 +108,19 @@ function fmtLeft(target, now){
   return { text: h>0 ? (h+"h "+m+"m") : (m+"m"), small:false };
 }
 
+/* "Fajr starts in", but "Sunrise in" (sunrise ends a prayer rather than
+   starting one) and, on a Friday, "Jummah in" for the Zuhr Jamaat. */
+function cdLabel(label, nx){
+  if(nx.name==="Sunrise") return "Sunrise in";
+  if(nx.name==="Zuhr" && label==="Jamaat in" && nx.target.getDay()===5) return "Jummah in";
+  return `${nx.name} ${label}`;
+}
+
 function cdBox(label, nx, now){
   if(!nx) return "";
   const { text, small } = fmtLeft(nx.target, now);
   return `<div class="cd-box">
-    <span class="cd-label">${nx.name} ${label}</span>
+    <span class="cd-label">${cdLabel(label, nx)}</span>
     <span class="cd-time${small?" text":""}">${text}</span>
   </div>`;
 }

@@ -89,7 +89,9 @@ function countViews(rows){
 
 async function load(){
   const { data } = await loadCollection("announcements", { orderField:"createdAt", desc:true });
-  items=data||[];
+  /* Archived posts are kept for the admin (console → Announcements →
+     Archived) but no longer shown, or counted in the unread badges. */
+  items=(data||[]).filter(a=>!a.archived);
   document.dispatchEvent(new CustomEvent("content:updated", { detail:"announcements" }));
 }
 

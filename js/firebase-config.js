@@ -8,12 +8,33 @@
    starts with "PASTE_".
    ============================================================ */
 export const firebaseConfig = {
-  apiKey: "AIzaSyDgoBu7mKx2DNN2ppywpK86uQ-ARf3k_D4",
-  authDomain: "council-of-mosque-prayer-times.firebaseapp.com",
-  projectId: "council-of-mosque-prayer-times",
-  storageBucket: "council-of-mosque-prayer-times.firebasestorage.app",
-  messagingSenderId: "81625512077",
-  appId: "1:81625512077:web:3743ac6c15a68415f60ac4"
+  apiKey: "AIzaSyD471Mrv2QZi9KHrWpAhUKNNiqkdm7omuI",
+  authDomain: "ikhaa-ghausia-masjid.firebaseapp.com",
+  projectId: "ikhaa-ghausia-masjid",
+  storageBucket: "ikhaa-ghausia-masjid.firebasestorage.app",
+  messagingSenderId: "285100144950",
+  appId: "1:285100144950:web:7b9bc1b9985602ca85db97"
+};
+
+/* ---------- The shared business directory ----------
+
+   The business directory is not this masjid's — it is one pool shared by
+   every Ikhaa Studios masjid app, so a business listed by any masjid
+   appears in all of them. It lives in its own Firebase project, which
+   the app reads from directly and anonymously, exactly as it reads this
+   masjid's own content.
+
+   This block is IDENTICAL on every masjid branch, unlike everything
+   above it. If these two ever disagree between branches, one app
+   quietly reads a different directory from the others — so change it in
+   one place and merge it outward rather than editing per branch. */
+export const hubConfig = {
+  apiKey: "AIzaSyDXBcsdCaZq0UjbNhcM7w0AXK6iqmKPcuE",
+  authDomain: "ikhaa-shared-directory.firebaseapp.com",
+  projectId: "ikhaa-shared-directory",
+  storageBucket: "ikhaa-shared-directory.firebasestorage.app",
+  messagingSenderId: "129165444490",
+  appId: "1:129165444490:web:91b94f53bd8b9cf753b473"
 };
 
 export function isConfigured(){

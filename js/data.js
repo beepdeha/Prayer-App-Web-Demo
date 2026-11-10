@@ -72,19 +72,84 @@ export async function initData(){
       };
     }
   }
+  for(const m of [3,10]) PRINTED_CHANGE[m] = findPrintedChange(raw[m]||[]);
   return TABLE;
 }
 
-export function dayTimes(date){
-  const key = (date.getMonth()+1)+"-"+date.getDate();
-  const base = TABLE[key];
-  return base ? withOverride(base, key) : null;
+/* ---- British Summer Time ----
+   The printed timetable changes the clocks on one fixed date each spring
+   and autumn, but the UK changes them on the LAST SUNDAY of March and
+   October, which falls on a different date every year. Between the two
+   dates the printed row is an hour out, so dayTimes() moves it.
+   The printed change day is read from the data itself (the day Zuhr jumps
+   by an hour), so a replacement timetable needs no edit here. */
+const PRINTED_CHANGE = {};          // month -> day the printed clocks change
+
+/* Which prayer's AM/PM rule applies to each TABLE field. */
+const FIELD_PRAYER = {
+  sehri:"fajr", sunrise:"sunrise", zuhrS:"zuhr", asrS:"asr", ishaS:"isha", maghrib:"maghrib",
+  fajrJ:"fajr", zuhrJ:"zuhr", asrJ:"asr", ishaJ:"isha"
+};
+
+function lastSunday(year, month){
+  const d = new Date(year, month, 0);          // last day of `month` (1-based)
+  return d.getDate() - d.getDay();
 }
+
+function findPrintedChange(rows){
+  for(let i=1; i<rows.length; i++){
+    const a=toMinutes(rows[i-1][3],"zuhr"), b=toMinutes(rows[i][3],"zuhr");
+    if(a!==null && b!==null && Math.abs(b-a)>=40) return rows[i][0];
+  }
+  return null;
+}
+
+/* Minutes to add to the printed row for this date: +60, -60 or 0. */
+export function clockShift(year, m, d){
+  if(m!==3 && m!==10) return 0;
+  const printed = PRINTED_CHANGE[m];
+  if(!printed) return 0;
+  const real = lastSunday(year, m);
+  const summer = changeDay => m===3 ? d>=changeDay : d<changeDay;
+  return (summer(real)?60:0) - (summer(printed)?60:0);
+}
+
+/* Move a stored "H.MM" by `delta` minutes, keeping the stored format. */
+function shiftTime(t, prayer, delta){
+  const mins = toMinutes(t, prayer);
+  if(mins===null) return t;
+  const total = mins + delta;
+  const h24 = Math.floor(total/60);
+  return `${h24%12===0 ? 12 : h24%12}.${String(total%60).padStart(2,"0")}`;
+}
+
+function shifted(base, delta){
+  if(!delta) return base;
+  const out = { ...base };
+  for(const [field, prayer] of Object.entries(FIELD_PRAYER)) out[field]=shiftTime(base[field], prayer, delta);
+  return out;
+}
+
+export function dayTimes(date){
+  const m = date.getMonth()+1, d = date.getDate();
+  const key = m+"-"+d;
+  const base = TABLE[key];
+  if(!base) return null;
+  /* Overrides are set by the admin in real clock time, so they are merged
+     after the shift and never moved by it. */
+  return withOverride(shifted(base, clockShift(date.getFullYear(), m, d)), key);
+}
+
+/* A Jamaat the masjid has not decided yet. Stored as the override value
+   itself, so it has no clock time: toMinutes() returns null for it and
+   formatTime() shows it as-is. */
+export const TBC = "TBC";
 
 /* "Begins" time string -> minutes-from-midnight, choosing AM/PM by prayer. */
 export function toMinutes(t, prayer){
   if(!t) return null;
-  const [h,mm]=t.split(".").map(Number);
+  const [h,mm]=String(t).split(".").map(Number);
+  if(!Number.isFinite(h)) return null;
   let hr=h, min=mm||0;
   const pm = (prayer==="zuhr"||prayer==="asr"||prayer==="maghrib"||prayer==="isha");
   if(pm && hr!==12) hr+=12;
@@ -183,9 +248,10 @@ export function defaultViewDate(from){
   return d;
 }
 
-/* Next prayer to BEGIN from now. */
+/* Next prayer to BEGIN from now. Sunrise is included so that during Fajr
+   the countdown is to the end of Fajr, not to a Zuhr hours away. */
 export function nextBegins(from){
-  return nextFrom([["Fajr","fajr","sehri"],["Zuhr","zuhr","zuhrS"],["Asr","asr","asrS"],
+  return nextFrom([["Fajr","fajr","sehri"],["Sunrise","sunrise","sunrise"],["Zuhr","zuhr","zuhrS"],["Asr","asr","asrS"],
                    ["Maghrib","maghrib","maghrib"],["Isha","isha","ishaS"]], "sehri", from);
 }
 

@@ -2,30 +2,26 @@
    TIMETABLE VIEW — full month as a data table.
    Toggle between Start times and Jamāʿah times for a cleaner view.
    ============================================================ */
-import { MON, RAW, overrideFor, formatTime } from "./data.js";
+import { MON, RAW, dayTimes, formatTime } from "./data.js";
 import { getSettings } from "./settings.js";
 
 const $ = id => document.getElementById(id);
-const DAY_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+/* Friday reads "Jmh" (Jummah) rather than "Fri" — it is the day's name
+   at the masjid. */
+const DAY_SHORT = ["Sun","Mon","Tue","Wed","Thu","Jmh","Sat"];
 let activeMonth = new Date().getMonth()+1;
 let mode = "begins";   // "begins" | "jamaat"
+let selectedDay = null; // the row the reader tapped, for this month only
 
-// Jamāʿah carried forward within a month for display.
-function monthRows(m){
-  const rows = RAW[m] || [];
-  let fJ="", zJ="", aJ="", iJ="";
-  for(let mm=1; mm<m; mm++){
-    for(const r of (RAW[mm]||[])){ if(r[6])fJ=r[6]; if(r[7])zJ=r[7]; if(r[8])aJ=r[8]; if(r[10])iJ=r[10]; }
-  }
-  return rows.map(r=>{
-    const [d,sehri,sunrise,zuhrS,asrS,ishaS,f,z,a,maghrib,i]=r;
-    if(f)fJ=f; if(z)zJ=z; if(a)aJ=a; if(i)iJ=i;
-    // admin-set custom Jamaat times win for that specific day
-    const ov = overrideFor(m, d) || {};
+/* One month as displayed. Goes through dayTimes() rather than reading RAW
+   directly, so the Jamaat carry-forward, the admin's custom times and the
+   clock-change correction are the same ones the Prayers page uses. */
+function monthRows(m, year){
+  return (RAW[m] || []).map(([d])=>{
+    const t = dayTimes(new Date(year, m-1, d)) || {};
     return { d,
-      begins:{ fajr:sehri, zuhr:zuhrS, asr:asrS, maghrib, isha:ishaS },
-      jamaat:{ fajr:ov.fajr||fJ, zuhr:ov.zuhr||zJ, asr:ov.asr||aJ,
-               maghrib:ov.maghrib||maghrib, isha:ov.isha||iJ }
+      begins:{ fajr:t.sehri, zuhr:t.zuhrS, asr:t.asrS, maghrib:t.maghrib, isha:t.ishaS },
+      jamaat:{ fajr:t.fajrJ, zuhr:t.zuhrJ, asr:t.asrJ, maghrib:t.maghrib, isha:t.ishaJ }
     };
   });
 }
@@ -35,7 +31,7 @@ function buildGrid(){
   g.innerHTML = MON.map((name,i)=>
     `<button class="monthbtn" data-m="${i+1}">${i+1}. ${name.slice(0,3)}</button>`).join("");
   g.querySelectorAll(".monthbtn").forEach(b=>{
-    b.onclick=()=>showMonth(parseInt(b.dataset.m,10));
+    b.onclick=()=>{ if(parseInt(b.dataset.m,10)!==activeMonth) selectedDay=null; showMonth(parseInt(b.dataset.m,10)); };
   });
 }
 
@@ -45,7 +41,7 @@ function showMonth(m){
     b.classList.toggle("active", parseInt(b.dataset.m,10)===m));
 
   const today=new Date();
-  const rows=monthRows(m);
+  const rows=monthRows(m, today.getFullYear());
   const { hour12, meridiem } = getSettings().display;
   /* `prayer` is needed because the stored "H.MM" has no AM/PM — which half
      of the day it lands in comes from which prayer it is. */
@@ -55,8 +51,8 @@ function showMonth(m){
     const date=new Date(today.getFullYear(), m-1, r.d);
     const isToday = date.toDateString()===today.toDateString();
     const isFri = date.getDay()===5;
-    const cls=[isToday?"is-today":"", isFri?"is-fri":""].filter(Boolean).join(" ");
-    return `<tr class="${cls}">
+    const cls=[isToday?"is-today":"", isFri?"is-fri":"", r.d===selectedDay?"is-sel":""].filter(Boolean).join(" ");
+    return `<tr class="${cls}" tabindex="0" data-d="${r.d}">
       <td class="d">${r.d}</td>
       <td class="dy">${DAY_SHORT[date.getDay()]}</td>
       <td>${cell(t.fajr,"fajr")}</td>
@@ -78,7 +74,18 @@ function showMonth(m){
         <tbody>${body}</tbody>
       </table>
     </div>
-    <p class="note">Showing <b>${mode==="begins"?"start":"Jamaat"} times</b>. Today is highlighted · Fridays are shaded.</p>`;
+    <p class="note">Showing <b>${mode==="begins"?"start":"Jamaat"} times</b>. Today is highlighted · Jummah (Friday) rows are shaded blue · Tap a row to mark it.</p>`;
+
+  /* Tap a row to mark it, tap it again to clear. Toggled in place rather
+     than re-rendering, so the table keeps its scroll position. */
+  box.querySelector("tbody").onclick = e=>{
+    const tr = e.target.closest("tr[data-d]");
+    if(!tr) return;
+    const d = parseInt(tr.dataset.d,10);
+    selectedDay = selectedDay===d ? null : d;
+    box.querySelectorAll("tr.is-sel").forEach(x=>x.classList.remove("is-sel"));
+    if(selectedDay!==null) tr.classList.add("is-sel");
+  };
 }
 
 /* Repaint the open month after a settings change (e.g. 12h/24h). No-op if

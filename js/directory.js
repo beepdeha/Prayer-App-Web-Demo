@@ -2,7 +2,7 @@
    DIRECTORY VIEW — Masjids (square grid → detail) and
    Businesses (list → detail with offers).
    ============================================================ */
-import { loadCollection } from "./firebase.js";
+import { loadCollection, HUB } from "./firebase.js";
 import { normalizeUrl } from "./links.js";
 import { enter } from "./motion.js";
 import { getLastSeen, markSeen } from "./seen.js";
@@ -62,7 +62,17 @@ async function resetAllBizNotifications(){
   renderBusinesses();
 }
 
-const BUSINESS_INTRO = "Our Business Directory exists to help our community benefit from the services offered by local Muslim-owned businesses. It's a win for everyone: the community gets easy access to trusted local services, the businesses gain visibility and custom, and every business that advertises with us also directly supports Dar Ul Uloom Siddiqia Masjid.";
+/* Deliberately names no masjid. The directory is shared, so a listing
+   here may have been brought in by another masjid — and the old wording
+   ("every business that advertises with us directly supports Dar Ul
+   Uloom Siddiqia Masjid") would no longer be true of all of them. Being
+   name-free also means this line no longer differs per branch. */
+const BUSINESS_INTRO = "Our Business Directory exists to help our community benefit from the services offered by local Muslim-owned businesses. It's a win for everyone: the community gets easy access to trusted local services, the businesses gain visibility and custom, and every business listed here supports the masjid that brought them in. The directory is shared between masjids, so you will find businesses from across the community.";
+
+/* Sits above the intro. An absolute https link, so links.js opens it in the
+   system browser rather than inside the app. */
+const BUSINESS_SIGNUP_URL = "https://ikhaastudio.co.uk/businesses.html";
+const BUSINESS_SIGNUP = `<p class="intro-signup">Own a local business? <a href="${BUSINESS_SIGNUP_URL}">Apply to have it listed in the app&nbsp;›</a></p>`;
 
 let categoryFilter = "all";
 
@@ -146,7 +156,7 @@ function renderMasjids(){
     (anyPinned ? `<button class="backlink mapbtn" id="viewMapBtn">📍 View on map</button>` : "") +
     `<div class="dir-grid">` + mosques.map(m=>{
       const placeholder = isPlaceholder(m.name);
-      return `<div class="card-sq${placeholder?" placeholder":""}" data-id="${esc(m.id)}">
+      return `<div class="card-sq${placeholder?" placeholder":""}" tabindex="0" data-id="${esc(m.id)}">
         <h2>${esc(m.name||"Masjid")}</h2>
         ${placeholder ? `<div class="meta">Reserved &middot; coming soon</div>`
           : (m.area?`<div class="meta">${esc(m.area)}</div>`:"")}
@@ -202,7 +212,7 @@ function showMasjid(id){
 /* ---------- Businesses (list → detail with offers) ---------- */
 function renderBusinesses(){
   const list=$("dirList");
-  const intro = `<div class="intro">${esc(BUSINESS_INTRO)}</div>`;
+  const intro = `<div class="intro">${BUSINESS_SIGNUP}${esc(BUSINESS_INTRO)}</div>`;
   if(!businesses.length){ list.innerHTML=intro+`<p class="empty">No businesses listed yet.</p>`; return; }
 
   /* Only primary types that something is actually filed under, so the
@@ -226,7 +236,7 @@ function renderBusinesses(){
         const placeholder = isPlaceholder(b.name);
         const unseen = unseenByBiz[b.id] || 0;
         const cat = displayCategory(b);
-        return `<div class="card-sq${placeholder?" placeholder":""}" data-id="${esc(b.id)}">
+        return `<div class="card-sq${placeholder?" placeholder":""}" tabindex="0" data-id="${esc(b.id)}">
           ${(!placeholder && b.image) ? `<img class="biz-thumb" src="${esc(b.image)}" alt="" loading="lazy">` : ""}
           <h2>${esc(b.name||"")}</h2>
           ${placeholder ? `<div class="meta">Advertise here</div>`
@@ -296,12 +306,18 @@ function showBusiness(id){
   enter(box, "detail-enter");
 }
 
-/* Shared by the full init and by the badge-only prime below. */
+/* Shared by the full init and by the badge-only prime below.
+
+   Two projects, one screen. Masjids are this masjid's own list, so they
+   stay local; businesses and offers come from the shared directory, so
+   a business listed by any masjid shows up here. They move together
+   because an offer is matched to its business by id — split across
+   projects those ids would refer to nothing. */
 async function loadData(){
   const [m,b,o]=await Promise.all([
     loadCollection("mosques",{ orderField:"name", desc:false }),
-    loadCollection("businesses",{ orderField:"name", desc:false }),
-    loadCollection("offers",{ orderField:"createdAt", desc:true })
+    loadCollection("businesses",{ orderField:"name", desc:false, from:HUB }),
+    loadCollection("offers",{ orderField:"createdAt", desc:true, from:HUB })
   ]);
   mosques=m.data||[];
   businesses=b.data||[];

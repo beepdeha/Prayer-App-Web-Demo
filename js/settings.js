@@ -24,6 +24,7 @@ const DEFAULTS = {
     enabled: false,
     target: "jamaat",        // "jamaat" | "start"
     leadMinutes: 10,         // 0–60, minutes before
+    sound: "full",           // "full" | "hayya" | "none" — see notifications.js SOUNDS
     prayers: { fajr:true, zuhr:true, asr:true, maghrib:true, isha:true }
   },
   announce: {                // push notifications for posted content
@@ -32,7 +33,11 @@ const DEFAULTS = {
   }
 };
 
-let state = structuredClone(DEFAULTS);
+/* Not structuredClone: that needs WebView 98+, and TV boxes ship far older
+   ones (the X96H has 91) — the app died on load there. DEFAULTS is plain
+   data, so a JSON round trip copies it just as well. */
+const clone = o => JSON.parse(JSON.stringify(o));
+let state = clone(DEFAULTS);
 let onChange = ()=>{};
 
 export function getSettings(){ return state; }
@@ -41,7 +46,13 @@ function apply(){
   document.documentElement.style.setProperty("--fs", state.fontScale.toFixed(2));
   document.documentElement.setAttribute("data-theme", state.theme);
   const tc = document.querySelector('meta[name="theme-color"]');
-  if(tc) tc.setAttribute("content", state.theme==="dark" ? "#06081f" : "#0A1247");
+  if(tc) tc.setAttribute("content", state.theme==="dark" ? "#15060A" : "#7B1E30");
+  /* Android draws the web view behind the status bar, so its icons must
+     contrast with the page, not with a bar colour: "LIGHT" means dark icons
+     for a light page. Left at the default, white icons vanished into the
+     light theme's background. No-op in a plain browser. */
+  window.Capacitor?.Plugins?.StatusBar?.setStyle({ style: state.theme==="dark" ? "DARK" : "LIGHT" })
+    ?.catch?.(()=>{});
 }
 
 async function persist(){ await setItem(KEY, state); }
@@ -49,17 +60,18 @@ async function persist(){ await setItem(KEY, state); }
 export async function initSettings(changeCb){
   onChange = changeCb || (()=>{});
   const saved = await getItem(KEY, null);
-  if(saved) state = Object.assign(structuredClone(DEFAULTS), saved, {
-    display: Object.assign(structuredClone(DEFAULTS.display), saved.display||{}),
-    notify: Object.assign(structuredClone(DEFAULTS.notify), saved.notify||{}),
-    announce: Object.assign(structuredClone(DEFAULTS.announce), saved.announce||{}, {
-      types: Object.assign(structuredClone(DEFAULTS.announce.types), saved.announce?.types||{})
+  if(saved) state = Object.assign(clone(DEFAULTS), saved, {
+    display: Object.assign(clone(DEFAULTS.display), saved.display||{}),
+    notify: Object.assign(clone(DEFAULTS.notify), saved.notify||{}),
+    announce: Object.assign(clone(DEFAULTS.announce), saved.announce||{}, {
+      types: Object.assign(clone(DEFAULTS.announce.types), saved.announce?.types||{})
     })
   });
   apply();
 }
 
 const $ = id => document.getElementById(id);
+const isIOS = () => window.Capacitor?.getPlatform?.() === "ios";
 const clampLead = n => Math.max(0, Math.min(60, Math.round(Number(n)||0)));
 
 /* The Display card's text-size + dark-mode rows are the only settings
@@ -128,30 +140,8 @@ function wireDisplayCard(s){
   $("meridiemToggle").onchange=e=>{ s.display.meridiem=e.target.checked; persist(); onChange("display"); };
 }
 
-/* `{ onboarding: true }` renders just the Display card (text size + dark
-   mode) with no About link and no notification cards — first-run should
-   take one glance, not a full tour of every preference in the app. */
-export function renderSettings(opts={}){
-  const { onboarding=false } = opts;
-  const s=state;
-  const root=$("settingsView");
-
-  if(onboarding){
-    root.querySelector(".settings").innerHTML = displayCard(s, { onboarding:true });
-    wireDisplayCard(s);
-    return;
-  }
-
-  root.querySelector(".settings").innerHTML = `
-    <div class="set-card">
-      <div class="set-row linkrow" id="aboutLink" role="button" tabindex="0">
-        <div class="lbl" style="font-weight:700">About</div>
-        <span class="chev">›</span>
-      </div>
-    </div>
-
-    ${displayCard(s, { onboarding:false })}
-
+function notifyCard(s){
+  return `
     <div class="set-card">
       <h2>Prayer notifications</h2>
       <div class="set-row">
@@ -169,14 +159,25 @@ export function renderSettings(opts={}){
         <div class="lbl">Minutes before<small>How early to remind you (0–60)</small></div>
         <input class="num-input" id="notifLead" type="number" inputmode="numeric" min="0" max="60" value="${s.notify.leadMinutes}">
       </div>
+      <div class="set-row">
+        <div class="lbl">Azaan<small>Sound played with prayer notifications</small></div>
+        <select class="sel" id="notifSound">
+          <option value="full" ${s.notify.sound==="full"?"selected":""}>Full Azaan</option>
+          <option value="hayya" ${s.notify.sound==="hayya"?"selected":""}>Hayya Ala Salah</option>
+          <option value="none" ${s.notify.sound==="none"?"selected":""}>No Azaan</option>
+        </select>
+      </div>
       ${PRAYERS.map(p=>`
       <div class="set-row">
         <div class="lbl">${p.charAt(0).toUpperCase()+p.slice(1)}</div>
         <label class="toggle"><input type="checkbox" data-prayer="${p}" ${s.notify.prayers[p]?"checked":""}><span class="track"></span><span class="knob"></span></label>
       </div>`).join("")}
-      <p class="note" style="margin-top:14px;text-align:left">Note: Maghrib reminders use its single time. Reminders are scheduled on your device and work offline.</p>
-    </div>
+      <p class="note" style="margin-top:14px;text-align:left">Note: Maghrib reminders use its single time. Reminders are scheduled on your device and work offline.${isIOS() ? " On iPhone, the Full Azaan plays its opening 30 seconds — the longest sound iOS allows for a notification." : ""}</p>
+    </div>`;
+}
 
+function announceCard(s){
+  return `
     <div class="set-card">
       <h2>Announcement notifications</h2>
       <div class="set-row">
@@ -189,22 +190,62 @@ export function renderSettings(opts={}){
         <label class="toggle"><input type="checkbox" data-anntype="${k}" ${s.announce.types[k]?"checked":""}><span class="track"></span><span class="knob"></span></label>
       </div>`).join("")}
     </div>`;
+}
+
+function wireNotifyCard(s, root){
+  $("notifToggle").onchange=e=>{ s.notify.enabled=e.target.checked; persist(); onChange("notify"); };
+  $("notifTarget").onchange=e=>{ s.notify.target=e.target.value; persist(); onChange("notify"); };
+  $("notifLead").onchange=e=>{ s.notify.leadMinutes=clampLead(e.target.value); e.target.value=s.notify.leadMinutes; persist(); onChange("notify"); };
+  $("notifSound").onchange=e=>{ s.notify.sound=e.target.value; persist(); onChange("notify"); };
+  root.querySelectorAll('input[data-prayer]').forEach(cb=>{
+    cb.onchange=()=>{ s.notify.prayers[cb.dataset.prayer]=cb.checked; persist(); onChange("notify"); };
+  });
+}
+
+function wireAnnounceCard(s, root){
+  $("annNotifToggle").onchange=e=>{ s.announce.enabled=e.target.checked; persist(); onChange("announce"); };
+  root.querySelectorAll('input[data-anntype]').forEach(cb=>{
+    cb.onchange=()=>{ s.announce.types[cb.dataset.anntype]=cb.checked; persist(); onChange("announce"); };
+  });
+}
+
+/* `{ onboarding: true }` renders Display plus both notification cards, but
+   not the About link — notifications are the one preference worth setting
+   before the app is in use, since a reminder missed is missed for good,
+   whereas About can be found later. */
+export function renderSettings(opts={}){
+  const { onboarding=false } = opts;
+  const s=state;
+  const root=$("settingsView");
+
+  if(onboarding){
+    root.querySelector(".settings").innerHTML =
+      displayCard(s, { onboarding:true }) + notifyCard(s) + announceCard(s);
+    wireDisplayCard(s);
+    wireNotifyCard(s, root);
+    wireAnnounceCard(s, root);
+    return;
+  }
+
+  root.querySelector(".settings").innerHTML = `
+    <div class="set-card">
+      <div class="set-row linkrow" id="aboutLink" role="button" tabindex="0">
+        <div class="lbl" style="font-weight:700">About</div>
+        <span class="chev">›</span>
+      </div>
+    </div>
+
+    ${displayCard(s, { onboarding:false })}
+    ${notifyCard(s)}
+    ${announceCard(s)}`;
 
   // wire controls
   $("aboutLink").onclick=()=>document.dispatchEvent(new CustomEvent("app:navigate",{ detail:"about" }));
   wireDisplayCard(s);
   $("dispTimes").onchange=e=>{ s.display.times=e.target.value; persist(); onChange("display"); };
   $("dispCountdown").onchange=e=>{ s.display.countdown=e.target.value; persist(); onChange("display"); };
-  $("notifToggle").onchange=e=>{ s.notify.enabled=e.target.checked; persist(); onChange("notify"); };
-  $("notifTarget").onchange=e=>{ s.notify.target=e.target.value; persist(); onChange("notify"); };
-  $("notifLead").onchange=e=>{ s.notify.leadMinutes=clampLead(e.target.value); e.target.value=s.notify.leadMinutes; persist(); onChange("notify"); };
-  root.querySelectorAll('input[data-prayer]').forEach(cb=>{
-    cb.onchange=()=>{ s.notify.prayers[cb.dataset.prayer]=cb.checked; persist(); onChange("notify"); };
-  });
-  $("annNotifToggle").onchange=e=>{ s.announce.enabled=e.target.checked; persist(); onChange("announce"); };
-  root.querySelectorAll('input[data-anntype]').forEach(cb=>{
-    cb.onchange=()=>{ s.announce.types[cb.dataset.anntype]=cb.checked; persist(); onChange("announce"); };
-  });
+  wireNotifyCard(s, root);
+  wireAnnounceCard(s, root);
 }
 
 function setFont(v){

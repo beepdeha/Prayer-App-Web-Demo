@@ -1,7 +1,8 @@
 /* ============================================================
-   THEME — Dar Ul Uloom Siddiqia Masjid palette:
-   navy (#0A1247) + gold (#C9A227) on cream (#F5F0E1),
-   taken from the Islamic girih background design.
+   THEME — Madinah Islamic Centre palette:
+   maroon (#7B1E30) + gold (#C49A3C) on warm ivory (#F7F2EC).
+   A first pass at the masjid's maroon; the logo's own teal
+   (#1B8592) is kept for the Friday rows so the two read together.
    Toggle dark mode with  <html data-theme="dark">.
    --fs is the user font-scale multiplier (Settings).
    ============================================================ */
@@ -12,30 +13,51 @@
   font-display:swap;
   src:url('../fonts/inter.woff2') format('woff2');
 }
+/* Bebas Neue (SIL OFL), latin subset — the closest free match to the heavy
+   condensed capitals of "MADINA ISLAMIC CENTRE" in the masjid's logo. Used
+   for the header name only. */
+@font-face{
+  font-family:'Bebas Neue';
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  src:url('../fonts/bebas-neue.woff2') format('woff2');
+}
 :root{
-  --bg:#F5F0E1;             /* cream page */
-  --bg2:#EDE6D2;
-  --header-grad-top:#FBF8EE;
+  --bg:#F7F2EC;             /* warm ivory page */
+  --bg2:#EFE5DA;
+  --header-grad-top:#FCF9F5;
   --card:#ffffff;
-  --ink:#0A1247;            /* navy text */
-  --muted:#5d6480;
-  --brand:#0A1247;          /* navy (primary) */
-  --brand-dark:#06081f;     /* deep navy (bars, table heads) */
-  --accent:#7F631A;         /* deep gold — AA-readable text on cream/white */
-  --accent-bright:#C9A227;  /* bright gold for lines, borders, highlights */
-  --accent-soft:#F7EFD6;
-  --line:#E2DAC4;
-  --highlight:#FBF1D4;      /* highlighted "next"/today row */
-  --highlight-edge:#C9A227;
-  --friday:#EAF0F7;         /* Friday row tint (cool, distinct from today's gold) */
-  --on-brand:#F5F0E1;       /* text on --brand surfaces */
-  --on-navy:#F5F0E1;        /* always-cream text on deep-navy bars */
-  --on-brand-soft:rgba(245,240,225,.78);
-  --nav-bg:#0A1247;         /* navy bottom-nav bar */
-  --nav-ink:rgba(245,240,225,.62);
-  --nav-active:#E3C46A;     /* light gold active */
-  --danger:#B3402E;         /* unread badge fill — warm brick, not a stock alarm red */
-  --on-danger:#F5F0E1;      /* badge number, cream (matches --on-brand) not pure white */
+  --ink:#3A0D17;            /* near-black maroon text */
+  --muted:#6E585D;
+  --brand:#7B1E30;          /* maroon (primary) */
+  --brand-dark:#3E0C17;     /* deep maroon (bars, table heads) */
+  --accent:#7E5D19;         /* deep gold — AA-readable text on ivory/white */
+  --accent-bright:#C49A3C;  /* bright gold for lines, borders, highlights */
+  --accent-soft:#F6ECD8;
+  --line:#E7DACD;
+  --highlight:#FAEEDA;      /* highlighted "next"/today row */
+  --highlight-edge:#C49A3C;
+  --friday:#DCEDEF;         /* Friday row tint — the logo's teal, distinct from today's gold */
+  --friday-edge:#1B8592;    /* Friday's left edge bar */
+  --friday-ink:#125F68;     /* Friday date + "Jmh" */
+  --selected:#7B1E30;       /* timetable row the reader tapped: solid, unlike the tints */
+  --on-selected:#F7F2EC;
+  --on-brand:#F7F2EC;       /* text on --brand surfaces */
+  --on-navy:#F7F2EC;        /* always-ivory text on the deep bars */
+  --on-brand-soft:rgba(247,242,236,.78);
+  --nav-bg:#7B1E30;         /* maroon bottom-nav bar */
+  --nav-ink:rgba(247,242,236,.66);
+  --nav-active:#EBC77A;     /* light gold active */
+  /* Unread badge. Gold rather than the usual red: a red pill disappears
+     against a maroon nav bar. Dark maroon number on it clears AA. */
+  --danger:#EBC04F;
+  --on-danger:#3E0C17;
+  --shadow-rgb:62,12,23;    /* card/nav shadows are tinted from the brand, never black */
+  /* Body-copy links. Declared once rather than per-theme on purpose: it
+     resolves against whichever --accent is in force, so the dark block below
+     needs no counterpart and a masjid re-skin only has to set --accent. */
+  --link:var(--accent);
   --pattern:url('../img/pattern-light.svg');
   --fs:1;
 
@@ -47,30 +69,33 @@
 }
 
 html[data-theme="dark"]{
-  --bg:#0A1247;
-  --bg2:#06081f;
-  --header-grad-top:#141d5c;
-  --card:#131b52;
-  --ink:#F5F0E1;
-  --muted:#a6adc8;
-  --brand:#C9A227;
-  --brand-dark:#06081f;
-  --accent:#E3C46A;
-  --accent-bright:#E3C46A;
-  --accent-soft:#182154;
-  --line:#26306e;
-  --highlight:#1d2764;
-  --highlight-edge:#C9A227;
-  --friday:#101a4a;         /* Friday row tint (dark) */
-  --on-brand:#0A1247;
-  --on-brand-soft:rgba(10,18,71,.75);
-  --on-navy:#F5F0E1;
-  --nav-bg:#06081f;
-  --nav-ink:rgba(245,240,225,.55);
-  --nav-active:#E3C46A;
-  /* Badge stays the same red in both themes — it always sits on navy nav
-     chrome or a card, never on the page background, so it doesn't invert. */
-  --danger:#C24A36;         /* a touch lighter than light mode, to hold up on dark navy */
-  --on-danger:#F5F0E1;
+  --bg:#1F0A10;
+  --bg2:#15060A;
+  --header-grad-top:#2B1017;
+  --card:#2C1118;
+  --ink:#F7F2EC;
+  --muted:#C4AEB3;
+  --brand:#D9AA4E;
+  --brand-dark:#15060A;
+  --accent:#EBC77A;
+  --accent-bright:#EBC77A;
+  --accent-soft:#35151C;
+  --line:#4C2029;
+  --highlight:#3D1821;
+  --highlight-edge:#D9AA4E;
+  --friday:#123B41;         /* Friday row tint (dark) */
+  --friday-edge:#6CC4CD;
+  --friday-ink:#B2E2E7;
+  --selected:#D9AA4E;       /* gold fill, maroon text: the inverse of the light theme */
+  --on-selected:#2B0A12;
+  --on-brand:#2B0A12;
+  --on-brand-soft:rgba(43,10,18,.75);
+  --on-navy:#F7F2EC;
+  --nav-bg:#15060A;
+  --nav-ink:rgba(247,242,236,.58);
+  --nav-active:#EBC77A;
+  --danger:#EBC04F;
+  --on-danger:#2B0A12;
+  --shadow-rgb:0,0,0;
   --pattern:url('../img/pattern-dark.svg');
 }

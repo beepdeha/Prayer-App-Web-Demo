@@ -154,6 +154,20 @@ function wireNav(){
   document.addEventListener("app:navigate", e=>show(e.detail));
 }
 
+/* ---- TV remote / keyboard ----
+   Buttons already click on Enter, but the directory cards and timetable rows
+   are plain elements made focusable with tabindex — the remote's OK button
+   (Enter / DPAD_CENTER) has to click them by hand. */
+function wireRemoteKeys(){
+  document.addEventListener("keydown", e=>{
+    if(e.key!=="Enter" && e.key!==" ") return;
+    const el=document.activeElement;
+    if(!el || !el.matches('[tabindex="0"]') || el.matches("button,a,input,select,textarea")) return;
+    e.preventDefault();
+    el.click();
+  });
+}
+
 /* ---- Auto-refresh live content when the app returns to the foreground ---- */
 function wireResumeRefresh(){
   const onResume=async ()=>{
@@ -170,12 +184,23 @@ function wireResumeRefresh(){
   window.addEventListener("focus", onResume);
 }
 
-/* ---- First-run onboarding: one glance, not a tour ----
-   Only text size and dark mode are asked up front — the two choices that
-   are awkward to discover later because they change how everything else
-   looks. Notification granularity and display-mode options are real
-   settings, just not ones worth gatekeeping entry on; they wait in
-   Settings, discovered on purpose rather than forced now. */
+/* Read from the header rather than hardcoded, because this file is shared by
+   every masjid's build — each one customises the header and gets the right
+   greeting for free. Joins the child nodes with a space instead of using
+   textContent: the name and its second line sit adjacent in the markup, so
+   textContent would run them together. */
+function masjidName(){
+  const el=document.querySelector(".mosque");
+  if(!el) return "";
+  return Array.from(el.childNodes).map(n=>(n.textContent||"").trim()).filter(Boolean).join(" ");
+}
+
+/* ---- First-run onboarding ----
+   Display and both notification cards are asked up front. Notifications
+   earn their place here because a prayer reminder not switched on is a
+   reminder permanently missed, and nothing prompts the user again. The
+   About link stays behind in Settings — it is reference material, not a
+   choice, and there is no cost to finding it later. */
 async function startOnboarding(){
   document.querySelector(".bottomnav").style.display="none";
   Object.entries(SECTIONS).forEach(([k,v])=> $(v.el).hidden = (k!=="settings"));
@@ -187,7 +212,11 @@ async function startOnboarding(){
 
   const view=$("settingsView");
   view.insertAdjacentHTML("afterbegin",
-    `<div class="onboard-banner">Asalaamu Alaikum 👋<br>Set how the app looks — everything else is in Settings whenever you want it.</div>`);
+    `<div class="onboard-banner">Asalaamu Alaikum, and welcome to the <span id="onboardMasjid"></span>app.<br>Take a moment to set things up the way you like — you can always change this later in Settings.</div>`);
+  /* Written as text, not interpolated into the markup above, so a masjid
+     name is never parsed as HTML. */
+  const name=masjidName();
+  if(name) $("onboardMasjid").textContent = name + " ";
   view.insertAdjacentHTML("beforeend",
     `<button class="onboard-continue" id="onboardContinue">Continue to Prayers →</button>`);
   $("onboardContinue").onclick=async()=>{
@@ -210,6 +239,7 @@ async function main(){
     if(kind==="theme"||kind==="font"||kind==="display"){ refreshPrayers(); refreshTimetable(); }
   });
   wireNav();
+  wireRemoteKeys();
   wireResumeRefresh();
 
   const onboarded = await getItem(ONBOARD_KEY, false);

@@ -76,6 +76,15 @@ export const CATEGORIES = {
 };
 
 export const PRIMARY_CATEGORIES = Object.keys(CATEGORIES);
+/* Every secondary type in one alphabetical list. The consoles offer only
+   this list and derive the primary from the choice, so nobody has to know
+   which category a "Car wash" lives under. Secondaries are unique across
+   primaries, which is what makes that lookup safe — keep it that way. */
+export const ALL_SECONDARY = Object.values(CATEGORIES).flat()
+  .sort((a, b) => a.localeCompare(b, "en-GB", { sensitivity: "base" }));
+
+export const primaryFor = secondary =>
+  PRIMARY_CATEGORIES.find(p => CATEGORIES[p].includes(secondary)) || "";
 
 /* What to show the reader. Falls back to the old single free-text
    `category` field so businesses added before the two-level split keep
