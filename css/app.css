@@ -62,17 +62,21 @@ header{
 }
 .mosque .mosque-name{
   font-family:'Bebas Neue','Arial Narrow',sans-serif;font-weight:400;font-synthesis:none;
-  letter-spacing:.04em;line-height:1;white-space:nowrap;display:block;
-  /* Always one line: follows the text-size setting, but is capped at the
-     width left beside the logo tile (MADINAH is ~3.3em wide in this face). */
-  font-size:min(calc(2.3rem*var(--fs)), calc((min(100vw, 560px) - 170px) / 3.6));
+  letter-spacing:.01em;line-height:1;white-space:nowrap;display:block;
+  /* Always one line, capped at the width left beside the logo tile (MADINAH
+     is ~2.86em wide in this face). Like the bottom nav, the header name does
+     not grow with the text-size setting: at this size the two lines already
+     fill the logo tile's height, and growing past it pulls the name out of
+     line with the logo. */
+  font-size:min(3.45rem, calc((min(100vw, 560px) - 170px) / 2.95));
 }
 /* "ISLAMIC CENTRE" sits under the name in the same condensed capitals,
    as it does in the logo, only smaller and in the brand colour. */
 .mosque .mosque-sub{
   display:block;font-family:'Bebas Neue','Arial Narrow',sans-serif;font-weight:400;
-  letter-spacing:.09em;line-height:1;white-space:nowrap;color:var(--brand);margin-top:2px;
-  font-size:min(calc(1.05rem*var(--fs)), calc((min(100vw, 560px) - 170px) / 7.2));
+  letter-spacing:.03em;line-height:1;white-space:nowrap;color:var(--brand);margin-top:2px;
+  /* ISLAMIC CENTRE is ~5.31em wide at this tracking */
+  font-size:min(1.575rem, calc((min(100vw, 560px) - 170px) / 5.45));
 }
 .title{ font-size:calc(1.7rem*var(--fs));font-weight:800;margin:10px 0 0;line-height:1.1;color:var(--ink);text-align:center; }
 .subtitle{ color:var(--muted);text-align:center;font-weight:700;margin:6px 0 0;font-size:calc(.9rem*var(--fs)); }
