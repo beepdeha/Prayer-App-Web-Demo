@@ -41,6 +41,9 @@ header{
   --head-top:max(20px, calc(env(safe-area-inset-top) + 8px));
   position:relative;text-align:center;padding:var(--head-top) 66px 4px;
   min-height:calc(var(--head-top) + 88px);
+  /* The content box spans exactly the logo tile's height, so centring the
+     name in it lines the name up with the middle of the logo. */
+  display:flex;flex-direction:column;justify-content:center;
 }
 /* The masjid's logo, top right. Rounded on purpose: it is the logo's own tile,
    not a component, so the square-corner rule does not apply. The header's
